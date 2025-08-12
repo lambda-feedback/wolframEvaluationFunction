@@ -3,6 +3,7 @@
 (* The basic evaluation function code*)
 
 equalQNumeric[answer_, response_, params_] := Module[{tolerance},
+  Print["Evaluating Equal Numeric"];
   tolerance = If[Lookup[params, "tolerance_is_absolute", False],
     Lookup[params, "tolerance", 0],
     Lookup[params, "tolerance", 0] * answer
@@ -15,6 +16,7 @@ equalQNumeric[answer_, response_, params_] := Module[{tolerance},
 ]
 
 equalQOther[answer_, response_, params_] := Module[{correctQ},
+  Print["Evaluating Equal Other"];
   <|
     "error" -> Null,
     "is_correct" -> TrueQ[answer == response]
@@ -111,11 +113,13 @@ StructureMatchQ[response_, answerTemplate_, namedVariables_,
     Atomic -> OptionValue[Atomic]]]]
 
 equalQStructure[answer_, response_, params_] := Module[{namedVariables,correctQ},
+  Print["Evaluating Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
 	correctQ = StructureMatchQ[
 		ToExpression[ToString[response],TraditionalForm],
 		ToExpression[ToString[answer],TraditionalForm],
 		namedVariables];
+
 	<|
 		"error" -> Null,
 		"is_correct" -> correctQ
@@ -137,6 +141,11 @@ evalQ[answer_, response_, params_] := Module[{},
 
 EvaluationFunction[answer_, response_, params_] := Module[{tolerance, correctQ, error},
   result = evalQ[answer, response, params];
+  Print["EvalFn"];
+  Print[answer];
+  Print[response];
+  Print[params];
+  Print[result];
   <|
     "is_correct" -> result["is_correct"],
     "feedback" -> If[result["is_correct"],
@@ -146,3 +155,22 @@ EvaluationFunction[answer_, response_, params_] := Module[{tolerance, correctQ, 
     "error" -> result["error"]
   |>
 ];
+
+evalQuestionIO = Function[
+  Module[{jsonData, result},
+    jsonData = Import[#1, "JSON"] //. List :> Association;
+    answer = jsonData["answerTemplate"];
+    response = jsonData["response"];
+    params = jsonData["params"];
+    Print["evalQuestionIO"];
+    Print[answer];
+    Print[response];
+    Print[params];
+    result = EvaluationFunction[answer, response, params];
+    Export[#2, result, "JSON", "Compact" -> True]
+  ]
+];
+
+argv = Rest[$ScriptCommandLine];
+evalQuestionIO[argv[[1]], argv[[2]]]
+
