@@ -128,9 +128,9 @@ equalQStructure[answer_, response_, params_] := Module[{namedVariables,correctQ}
 
 (* The evaluation function itself *)
 
-evalQ[answer_, response_, params_] := Module[{},
+evalQ[type_, answer_, response_, params_] := Module[{},
   Which[
-	Lookup[params,"equality_test","None"] == "structure",
+	type == "structure",
 	equalQStructure[answer,response,params],
 	NumericQ[answer],
     equalQNumeric[answer, response, params],
@@ -139,13 +139,8 @@ evalQ[answer_, response_, params_] := Module[{},
   ]
 ];
 
-EvaluationFunction[answer_, response_, params_] := Module[{tolerance, correctQ, error},
-  result = evalQ[answer, response, params];
-  Print["EvalFn"];
-  Print[answer];
-  Print[response];
-  Print[params];
-  Print[result];
+EvaluationFunction[type_, answer_, response_, params_] := Module[{tolerance, correctQ, error},
+  result = evalQ[type, answer, response, params];
   <|
     "is_correct" -> result["is_correct"],
     "feedback" -> If[result["is_correct"],
@@ -159,14 +154,11 @@ EvaluationFunction[answer_, response_, params_] := Module[{tolerance, correctQ, 
 evalQuestionIO = Function[
   Module[{jsonData, result},
     jsonData = Import[#1, "JSON"] //. List :> Association;
+    type = jsonData["comparisonType"];
     answer = jsonData["answerTemplate"];
     response = jsonData["response"];
     params = jsonData["params"];
-    Print["evalQuestionIO"];
-    Print[answer];
-    Print[response];
-    Print[params];
-    result = EvaluationFunction[answer, response, params];
+    result = EvaluationFunction[type, answer, response, params];
     Export[#2, result, "JSON", "Compact" -> True]
   ]
 ];
