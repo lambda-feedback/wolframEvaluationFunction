@@ -8,38 +8,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check Wolfram Licence Key
-        env:
-          MATHPASS: ${{ secrets.WOLFRAM_ENGINE_MATHPASS }}
-        if: ${{ env.MATHPASS == '' }}
-        run: |
-          echo "Set WOLFRAM_ENGINE_MATHPASS in secrets"
-          exit 1
-
   deploy:
     uses: lambda-feedback/evaluation-function-workflows/.github/workflows/deploy.yml@main
-    needs: setup
     with:
-      template-repository-name: "lambda-feedback/evaluation-function-boilerplate-wolfram"
-      build-target: final-private
-    permissions:
-      contents: read
-      id-token: write
-      packages: write
+      template-repository-name: 'lambda-feedback/evaluation-function-boilerplate-wolfram'
     secrets:
       aws-key-id: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_ID }}
       aws-secret-key: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_SECRET}}
       function-admin-api-key: ${{ secrets.FUNCTION_ADMIN_API_KEY}}
-      build-secrets: |
-        "mathpass=${{ secrets.WOLFRAM_ENGINE_MATHPASS }}"
