@@ -1,10 +1,13 @@
 {
-	"comparisonType":"structure",
-	"answerTemplate":"Sin[p x + q]",
+  "method": "eval",
+  "params": {
+    "answer":"Sin[p x + q]",
 	"response":"Sin[a x + b]",
 	"params":{
+		"comparisonType":"structure",
 		"named_variables":"{x}",
 		"correct_response_feedback":"Your answer is correct!",
 		"incorrect_response_feedback":"Your answer is incorrect!"
 	}
+  }
 }
