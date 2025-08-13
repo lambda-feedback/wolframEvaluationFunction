@@ -13,13 +13,3 @@ ENV LOG_LEVEL="DEBUG"
 
 # Copy the evaluation function to the app directory
 COPY ./evaluation_function.wl /app/evaluation_function.wl
-
-FROM base AS with-license
-COPY ./dist/LICENSE.txt /home/wolframengine/.WolframEngine/Licensing/mathpass
-
-FROM base AS without-license
-# no COPY, no error
-
-# Choose final stage with build arg
-ARG WITH_LICENSE=false
-FROM ${WITH_LICENSE:+with-license}${WITH_LICENSE:-without-license}
