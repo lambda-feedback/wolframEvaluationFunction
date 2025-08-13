@@ -15,7 +15,7 @@ ENV LOG_LEVEL="DEBUG"
 COPY ./evaluation_function.wl /app/evaluation_function.wl
 
 FROM base AS with-license
-COPY ./dist/LICENCE.txt /home/wolframengine/.WolframEngine/Licensing/mathpass
+COPY ./dist/LICENSE.txt /home/wolframengine/.WolframEngine/Licensing/mathpass
 
 FROM base AS without-license
 # no COPY, no error
