@@ -111,15 +111,15 @@ curl --location 'http://localhost:8080/wolframEvaluationFunction' \
 --header 'Content-Type: application/json' \
 --header 'command: eval' \
 --data '{
-  "answer": 1,
-  "response": 1.02,
-  "params": {
-    "tolerance": 0.01,
-    "tolerance_is_absolute": true,
-    "correct_response_feedback": "Correct!",
-    "incorrect_response_feedback": "Try again."
-  }
-} 
+	"answer":"Sin[p x + q]",
+	"response":"Sin[a x + b]",
+	"params":{
+		"comparisonType":"structure",
+		"named_variables":"{x}",
+		"correct_response_feedback":"Your answer is correct!",
+		"incorrect_response_feedback":"Your answer is incorrect!"
+	}
+}'
 ```
 
 
