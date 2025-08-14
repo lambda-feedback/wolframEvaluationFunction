@@ -1,15 +1,74 @@
 # Wolfram Language Evaluation Function
 
-This repository contains an implementation of a Wolfram evaluation function that checks if the structure, numeric value or any other value are equal.
+This repository contains the boilerplate code needed to create a containerized evaluation function written in Wolfram Language.
 
+## Quickstart
 
-## Development
+This chapter helps you to quickly set up a new Wolfram evaluation function using this template repository.
+
+> [!NOTE]
+> After setting up the evaluation function, delete this chapter from the `README.md` file, and add your own documentation.
+
+#### 1. Create a new repository
+
+- In GitHub, choose `Use this template` > `Create a new repository` in the repository toolbar.
+
+- Choose the owner, and pick a name for the new repository.
+
+  > [!IMPORTANT]
+  > If you want to deploy the evaluation function to Lambda Feedback, make sure to choose the Lambda Feedback organization as the owner.
+
+- Set the visibility to `Public` or `Private`.
+
+  > [!IMPORTANT]
+  > If you want to use GitHub [deployment protection rules](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#deployment-protection-rules), make sure to set the visibility to `Public`.
+
+- Click on `Create repository`.
+
+#### 2. Clone the new repository
+
+Clone the new repository to your local machine using the following command:
+
+```bash
+git clone <repository-url>
+```
+
+#### 3. Configure the evaluation function
+
+When deploying to Lambda Feedback, set the evaluation function name in the `config.json` file. Read the [Deploy to Lambda Feedback](#deploy-to-lambda-feedback) section for more information.
+
+#### 4. Develop the evaluation function
+
+You're ready to start developing your evaluation function. Head over to the [Development](#development) section to learn more.
+
+#### 5. Update the README
+
+In the `README.md` file, change the title and description so it fits the purpose of your evaluation function.
+
+Also, don't forget to delete the Quickstart chapter from the `README.md` file after you've completed these steps.
+
+## Usage
+
+You can run the evaluation function either using [the pre-built Docker image](#run-the-docker-image) or build and run [the binary executable](#build-and-run-the-binary).
+
+### Run the Docker Image
+
+The pre-built Docker image comes with [Shimmy](https://github.com/lambda-feedback/shimmy) installed.
+
+> [!TIP]
+> Shimmy is a small application that listens for incoming HTTP requests, validates the incoming data and forwards it to the underlying evaluation function. Learn more about Shimmy in the [Documentation](https://github.com/lambda-feedback/shimmy).
+
+The pre-built Docker image is available on the GitHub Container Registry. You can run the image using the following command:
+
+```bash
+docker run -p 8080:8080 ghcr.io/lambda-feedback/evaluation-function-boilerplate-wolfram:latest
+```
 
 ### Run the Script
 
 You can choose between running the Wolfram evaluation function itself, ore using Shimmy to run the function.
 
-**Local**
+**Raw Mode**
 
 Use the following command to run the evaluation function directly:
 
@@ -18,36 +77,18 @@ wolframscript -f evaluation_function.wl request.json response.json
 ```
 
 This will run the evaluation function using the input data from `request.json` and write the output to `response.json`.
-An example `request.json` is:
 
-```
-{
-  "method": "eval",
-  "params": {
-    "answer":"Sin[p x + q]",
-	"response":"Sin[a x + b]",
-	"params":{
-		"comparisonType":"structure",
-		"named_variables":"{x}",
-		"correct_response_feedback":"Your answer is correct!",
-		"incorrect_response_feedback":"Your answer is incorrect!"
-	}
-  }
-}
+**Shimmy**
+
+To have a more user-friendly experience, you can use [Shimmy](https://github.com/lambda-feedback/shimmy) to run the evaluation function.
+
+To run the evaluation function using Shimmy, use the following command:
+
+```bash
+shimmy -c "wolframscript" -a "-f" -a "evaluation_function.wl" -i file
 ```
 
-Which gives the response:
-
-```
-{
-  "command": "eval",
-  "result": {
-    "is_correct": true,
-    "feedback": "Your answer is correct!",
-    "error": null
-  }
-}
-```
+## Development
 
 ### Prerequisites
 
@@ -85,7 +126,7 @@ wolframscript -f evaluation_function.wl request.json response.json
 To build the Docker image, run the following command:
 
 ```bash
-docker build -t wolfram-evaluation-function .
+docker build -t my-wolfram-evaluation-function .
 ```
 
 ### Running the Docker Image
@@ -121,8 +162,6 @@ curl --location 'http://localhost:8080/wolframEvaluationFunction' \
 	}
 }'
 ```
-
-
 ## Deployment
 
 This section guides you through the deployment process of the evaluation function. If you want to deploy the evaluation function to Lambda Feedback, follow the steps in the [Lambda Feedback](#deploy-to-lambda-feedback) section. Otherwise, you can deploy the evaluation function to other platforms using the [Other Platforms](#deploy-to-other-platforms) section.
