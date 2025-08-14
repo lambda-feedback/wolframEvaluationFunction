@@ -129,6 +129,39 @@ To build the Docker image, run the following command:
 docker build -t my-wolfram-evaluation-function .
 ```
 
+### Running the Docker Image
+To run the Docker image, you will need to mount a mathpass licence or pass an entitlement ID. To get these see [Licencing](#Wolfram-Engine-License
+).
+
+To run using mathpass development licence (this assumes that the mathpass file is in your local working directory:
+```bash
+docker run -it --rm -v $(pwd)/mathpass:/home/wolframengine/.WolframEngine/Licensing/mathpass wolfram-evaluation-function
+```
+
+To run using the entitlement key:
+```bash
+docker run -it --rm -env WOLFRAMSCRIPT_ENTITLEMENTID=[YOUR_ENTITLEMENT_ID] wolfram-evaluation-function
+```
+
+### Sending requests to the image 
+We recommend sending requests to your image using [Postman](https://www.postman.com/), an easy to use interface for sending API requests.
+
+If you prefer to use `curl` here is an example request:
+```bash
+curl --location 'http://localhost:8080/wolframEvaluationFunction' \
+--header 'Content-Type: application/json' \
+--header 'command: eval' \
+--data '{
+	"answer":"Sin[p x + q]",
+	"response":"Sin[a x + b]",
+	"params":{
+		"comparisonType":"structure",
+		"named_variables":"{x}",
+		"correct_response_feedback":"Your answer is correct!",
+		"incorrect_response_feedback":"Your answer is incorrect!"
+	}
+}'
+```
 ## Deployment
 
 This section guides you through the deployment process of the evaluation function. If you want to deploy the evaluation function to Lambda Feedback, follow the steps in the [Lambda Feedback](#deploy-to-lambda-feedback) section. Otherwise, you can deploy the evaluation function to other platforms using the [Other Platforms](#deploy-to-other-platforms) section.
