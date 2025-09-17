@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # TEST CODE FOR AWS
-curl google.com
-echo WOLFRAM_SCRIPT_ENTILEMENTID
+echo TEST CODE
 echo $WOLFRAMSCRIPT_ENTITLEMENTID
+
+curl google.com
+
 
 # Exit immediately if a command exits with a non-zero status.
 # set -e
