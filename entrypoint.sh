@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# TEST CODE FOR AWS
-echo TEST CODE
-echo $WOLFRAMSCRIPT_ENTITLEMENTID
-
-curl google.com
-
-
 # Exit immediately if a command exits with a non-zero status.
 # set -e
 
