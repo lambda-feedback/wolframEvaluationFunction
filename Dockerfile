@@ -1,11 +1,10 @@
 FROM ghcr.io/lambda-feedback/evaluation-function-base/wolfram:latest as base
 
 # Command to start the evaluation function with
-ENV FUNCTION_COMMAND="bash"
+ENV FUNCTION_COMMAND="echo $WOLFRAMSCRIPT_ENTITLEMENTID && curl google.com && wolframscript"
 
 # Args to start the evaluation function with
-# ENV FUNCTION_ARGS="-f,/app/evaluation_function.wl"
-ENV FUNCTION_ARGS="-f,/app/test.sh"
+ENV FUNCTION_ARGS="-f,/app/evaluation_function.wl"
 
 # Interface to use for the evaluation function
 ENV FUNCTION_INTERFACE="file"
