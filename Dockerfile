@@ -14,4 +14,3 @@ ENV LOG_LEVEL="DEBUG"
 
 # Copy the evaluation function to the app directory
 COPY ./evaluation_function.wl /app/evaluation_function.wl
-COPY ./test.sh /app/test.sh
