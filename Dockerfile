@@ -1,6 +1,6 @@
 FROM ghcr.io/lambda-feedback/evaluation-function-base/wolfram:latest as base
 
-CMD apt install curl
+RUN apt-get install curl
 
 # Command to start the evaluation function with
 ENV FUNCTION_COMMAND="bash"
