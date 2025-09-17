@@ -1,4 +1,4 @@
 echo TEST CODE FOR AWS
 echo $WOLFRAMSCRIPT_ENTITLEMENTID
-echo Ping Google DNS
-ping 8.8.8.8
+echo Curling Google
+curl google.com

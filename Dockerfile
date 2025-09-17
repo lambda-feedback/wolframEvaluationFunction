@@ -1,19 +1,22 @@
-FROM ghcr.io/lambda-feedback/evaluation-function-base/wolfram:latest as base
+# FROM ghcr.io/lambda-feedback/evaluation-function-base/wolfram:latest as base
+FROM alpine:3.14
+
+CMD ./test.sh
 
 
 # Command to start the evaluation function with
 # ENV FUNCTION_COMMAND="wolframscript"
-ENV FUNCTION_COMMAND="bash"
+# ENV FUNCTION_COMMAND="bash"
 
-# Args to start the evaluation function with
-# ENV FUNCTION_ARGS="-f,/app/evaluation_function.wl"
-ENV FUNCTION_ARGS="-f,/app/test.sh"
+# # Args to start the evaluation function with
+# # ENV FUNCTION_ARGS="-f,/app/evaluation_function.wl"
+# ENV FUNCTION_ARGS="-f,/app/test.sh"
 
-# Interface to use for the evaluation function
-ENV FUNCTION_INTERFACE="file"
+# # Interface to use for the evaluation function
+# ENV FUNCTION_INTERFACE="file"
 
-ENV LOG_LEVEL="DEBUG"
+# ENV LOG_LEVEL="DEBUG"
 
-# Copy the evaluation function to the app directory
-COPY ./evaluation_function.wl /app/evaluation_function.wl
-COPY ./test.sh /app/test.sh
+# # Copy the evaluation function to the app directory
+# COPY ./evaluation_function.wl /app/evaluation_function.wl
+# COPY ./test.sh /app/test.sh
