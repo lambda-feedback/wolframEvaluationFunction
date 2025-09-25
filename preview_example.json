@@ -1,0 +1,6 @@
+{
+  "method": "preview",
+  "params": {
+	"response":"Sin[a x + b]"
+	}
+}
