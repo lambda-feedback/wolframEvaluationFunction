@@ -14,11 +14,28 @@
 
 (* For new style packages see: https://mathematica.stackexchange.com/a/176489) *)
 (* Declare package context *)
-Package["evaluate`"]
+BeginPackage["evaluate`"]
 
+EvaluationFunction[type_, answer_, response_, params_] := Module[{result, feedback},
+  Print["Running Evaluation Function"];
+  result = evalQ[type, answer, response, params];
+  Print["Results"];
+  Print[result];
+  feedback = If[result["is_correct"],
+      Lookup[params, "correct_response_feedback", "Correct!"],
+      Lookup[params, "incorrect_response_feedback", "Incorrect!"]
+      ];
+  <|
+    "command" -> "eval",
+    "result" -> <|
+      "is_correct" -> result["is_correct"],
+      "feedback" -> feedback,
+      "error" -> result["error"]
+    |>
+  |>
+]
 
-(* Export functions *)
-PackageExport["EvaluationFunction"]
+Begin["`Private`"]
 
 equalQNumeric[answer_, response_, params_] := Module[{tolerance},
   Print["Evaluating Equal Numeric"];
@@ -156,22 +173,5 @@ evalQ[type_, answer_, response_, params_] := Module[{},
     equalQOther[answer, response, params]
   ]
 ];
-
-EvaluationFunction[type_, answer_, response_, params_] := Module[{result, feedback},
-  Print["Running Evaluation Function"];
-  result = evalQ[type, answer, response, params];
-  Print["Results"];
-  Print[result];
-  feedback = If[result["is_correct"],
-      Lookup[params, "correct_response_feedback", "Correct!"],
-      Lookup[params, "incorrect_response_feedback", "Incorrect!"]
-      ];
-  <|
-    "command" -> "eval",
-    "result" -> <|
-      "is_correct" -> result["is_correct"],
-      "feedback" -> feedback,
-      "error" -> result["error"]
-    |>
-  |>
-]
+End[]
+EndPackage[]
