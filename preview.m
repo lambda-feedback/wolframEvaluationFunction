@@ -16,6 +16,7 @@
 (* Declare package context *)
 BeginPackage["preview`"]
 
+(*TODO: Add error handling and check how it works with Lambda Feedback, check Phil's email on error handling*)
 PreviewFunction[response_] := Module[{result},
   Print["Running Preview Function"];
   Print["Preview Input:", response];
@@ -23,7 +24,8 @@ PreviewFunction[response_] := Module[{result},
         "command" -> "preview",
         "result" -> <|
           "preview" -> <|
-            "message" -> response
+            "latex" -> response,
+            "sympy" -> response
           |>
         |>
   |>
