@@ -13,3 +13,5 @@ ENV LOG_LEVEL="DEBUG"
 
 # Copy the evaluation function to the app directory
 COPY ./evaluation_function.wl /app/evaluation_function.wl
+COPY ./evaluate.m /app/evaluate.m
+COPY ./preview.m /app/preview.m
