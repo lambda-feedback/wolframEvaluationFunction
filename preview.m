@@ -26,8 +26,7 @@ PreviewFunction[response_] := Module[{parsedResponse, latexString, wolframString
     Return[
       <|
         "error" -> <|
-          "message" -> "Unable to process expression",
-          "error_thrown" -> parsedResponse
+          "message" -> parsedResponse
         |>
       |>
     ]
