@@ -1,3 +1,5 @@
+(* ::Package:: *)
+
 (* Wolfram Language Package *)
 (* Created by the Wolfram Language Plugin for IntelliJ, see http://wlplugin.halirutan.de/ *)
 
@@ -64,24 +66,24 @@ into Optional[..] patterns *)
 
 Options[PatternizeSymbol] = {Atomic -> False};
 
-PatternizeSymbol[a_Symbol, namedVariables_, OptionsPattern[]] /;
+PatternizeSymbol[a_Symbol, namedVariables_, OptionsPattern[]] /; 
   Not[MemberQ[namedVariables, a]] := \!\(\*
 TagBox[
 StyleBox[
-RowBox[{"If", "[",
+RowBox[{"If", "[", 
 RowBox[{
-RowBox[{"OptionValue", "[", "Atomic", "]"}], ",",
-RowBox[{"(",
-RowBox[{"Optional", "[",
-RowBox[{"PatternTest", "[",
+RowBox[{"OptionValue", "[", "Atomic", "]"}], ",", 
+RowBox[{"(", 
+RowBox[{"Optional", "[", 
+RowBox[{"PatternTest", "[", 
 RowBox[{
-RowBox[{"pattern", "[",
-RowBox[{"a", ",",
-RowBox[{"Blank", "[", "]"}]}], "]"}], ",", "AtomQ"}], "]"}], "]"}], ")"}], ",",
-RowBox[{"(",
-RowBox[{"Optional", "[",
-RowBox[{"pattern", "[",
-RowBox[{"a", ",",
+RowBox[{"pattern", "[", 
+RowBox[{"a", ",", 
+RowBox[{"Blank", "[", "]"}]}], "]"}], ",", "AtomQ"}], "]"}], "]"}], ")"}], ",", 
+RowBox[{"(", 
+RowBox[{"Optional", "[", 
+RowBox[{"pattern", "[", 
+RowBox[{"a", ",", 
 RowBox[{"Blank", "[", "]"}]}], "]"}], "]"}], ")"}]}], "]"}],
 ShowSpecialCharacters->False,
 ShowStringCharacters->True,
@@ -90,7 +92,7 @@ FullForm]\) /. pattern -> Pattern
 
 PatternizeSymbol[a_, namedVariables_, OptionsPattern[]] := a
 
-ComplexResolve[Optional[a_Symbol] + I Optional[b_Symbol]] :=
+ComplexResolve[Optional[a_Symbol] + I Optional[b_Symbol]] := 
  Complex[a, b]
 
 ComplexResolve[I Optional[b_Symbol]*Pi] := Complex[0, b]*Pi
@@ -104,7 +106,7 @@ DepatternizePattern[pattern_Optional] := pattern[[1, 1, 1]]
 
 DepatternizePattern[pattern_] := pattern
 
-ComplexResolve[Optional[a_Symbol] + I Optional[b_Symbol]] :=
+ComplexResolve[Optional[a_Symbol] + I Optional[b_Symbol]] := 
  Complex[a, b]
 
 ComplexResolve[I Optional[b_Symbol]*Pi] := Complex[0, b]*Pi
@@ -116,9 +118,9 @@ ComplexResolve[a_] := a
 
 Options[Patternize] = {Atomic -> False};
 
-Patternize[expression_, namedVariables_, OptionsPattern[]] :=
- Map[PatternizeSymbol[#, namedVariables,
-    Atomic -> OptionValue[Atomic]] &,
+Patternize[expression_, namedVariables_, OptionsPattern[]] := 
+ Map[PatternizeSymbol[#, namedVariables, 
+    Atomic -> OptionValue[Atomic]] &, 
   MapAll[ComplexResolve, expression], {-1}]
 
 Depatternize[pattern_] := MapAll[DepatternizePattern, pattern]
@@ -127,24 +129,23 @@ Depatternize[pattern_] := MapAll[DepatternizePattern, pattern]
 has the same structure as a given answer template, given a set of \
 named variables.*)
 
-inertFunctionRules = {Sin -> fSin, Cos -> fCos, Tan -> fTan,
-   Sec -> fSec, Csc -> fCsc, Cot -> fCot, ArcSin -> fArcSin,
-   ArcCos -> fArcCos, ArcTan -> fArcTan, ArcSec -> fArcSec,
-   ArcCsc -> fArcCsc, ArcCot -> fArcCot, Sinh -> fSinh, Cosh -> fCosh,
-    Tanh -> fTanh, Sech -> fSech, Csch -> fCsch, Coth -> fCoth,
-   ArcSinh -> fArcSinh, ArcCosh -> fArcCosh, ArcTanh -> fArcTanh,
-   ArcSech -> fArcSech, ArcCsch -> fArcCsch, ArcCoth -> fArcCoth,
-   Exp -> fExp, Log -> fLog};
-
+inertFunctionRules = {Sin -> fSin,sin->fSin, Cos -> fCos,cos->fCos, Tan -> fTan, tan->fTan,
+   Sec -> fSec,sec->fSec, Csc -> fCsc,Cosec->fCsc,csc->fCsc,cosec->fCsc, Cot -> fCot, cot->fCot,ArcSin -> fArcSin, arcsin->fArcSin,asin->fArcSin,
+   ArcCos -> fArcCos,arccos->fArcCos,acos->fArcCos, ArcTan -> fArcTan,arctan->fArcTan,atan->fArcTan, ArcSec -> fArcSec, arcsec->fArcSec,asec->fArcSec,
+   ArcCsc -> fArcCsc,ArcCosec->fArcCsc,arccsc->fArcCsc,acsc->fArcCsc,acosec->fArcCsc, ArcCot -> fArcCot,arccot->fArcCot,acot->fArcCot, Sinh -> fSinh,sinh->fSinh, Cosh -> fCosh,cosh->fCosh,anh -> fTanh,tanh->fTanh, Sech -> fSech,sech->fSech, Csch -> fCsch,Cosech->fCsch,csch->fCsch,cosech->fCsch, Coth -> fCoth, coth->fCoth,
+   ArcSinh -> fArcSinh, arcsinh->fArcSinh,asinh->fArcSinh, ArcCosh -> fArcCosh,arccosh->fArcCosh,acosh->fArcCosh, ArcTanh -> fArcTanh,arctanh->fArcTanh,atanh->fArcTanh, 
+    ArcSech -> fArcSech, arcsech->fArcSech,asech->fArcSech, ArcCsch -> fArcCsch,ArcCosech->fArcCsch,arccsch->fArcCsch,acsch->fArcCsch,acosech->fArcCsch, ArcCoth -> fArcCoth,arccoth->fArcCoth,acoth->fArcCoth, 
+   Exp -> fExp,exp->fExp, Log -> fLog,log->fLog};
+   
 Options[StructureMatchQ] = {Atomic -> False};
 
-StructureMatchQ[response_, answerTemplate_, namedVariables_,
-  OptionsPattern[]] :=
- Module[{response2, answerTemplate2},
-  response2 = ReplaceAll[response, inertFunctionRules];
-  answerTemplate2 = ReplaceAll[answerTemplate, inertFunctionRules];
-  MatchQ[response2,
-   Patternize[answerTemplate2, namedVariables,
+StructureMatchQ[response_, answerTemplate_, namedVariables_, 
+  OptionsPattern[]] := 
+ Module[{response2, answerTemplate2}, 
+  response2 = ReplaceAll[response, inertFunctionRules]; 
+  answerTemplate2 = ReplaceAll[answerTemplate, inertFunctionRules]; 
+  MatchQ[response2, 
+   Patternize[answerTemplate2, namedVariables, 
     Atomic -> OptionValue[Atomic]]]]
 
 equalQStructure[answer_, response_, params_] := Module[{namedVariables,correctQ},
@@ -171,6 +172,41 @@ evalQ[type_, answer_, response_, params_] := Module[{},
     equalQNumeric[answer, response, params],
     True,
     equalQOther[answer, response, params]
+  ]
+];
+
+EvaluationFunction[type_, answer_, response_, params_] := Module[{result,feedback},
+  Print["Running Evaluation Function"];
+  result = evalQ[type, answer, response, params];
+  Print["Results"];
+  Print[result];
+  feedback = If[result["is_correct"],
+      Lookup[params, "correct_response_feedback", "Correct!"],
+      Lookup[params, "incorrect_response_feedback", "Incorrect!"]
+      ];
+  <|
+        "command" -> "eval",
+        "result" -> <|
+          "is_correct" -> result["is_correct"],
+          "feedback" -> feedback,
+          "error" -> result["error"]
+        |>
+  |>
+];
+
+evalQuestionIO = Function[
+  Module[{jsonData, result,requestData,answer,response,params,type},
+    jsonData = Import[#1, "JSON"] //. List :> Association;
+    requestData = jsonData["params"];
+    answer = requestData["answer"];
+    response = requestData["response"];
+    params = requestData["params"];
+    type = params["comparisonType"];
+    Print["Evaluating Response Against Answer"];
+    result = EvaluationFunction[type, answer, response, params];
+    Print["Response"];
+    Print[result];
+    Export[#2, result, "JSON", "Compact" -> True]
   ]
 ];
 End[]
