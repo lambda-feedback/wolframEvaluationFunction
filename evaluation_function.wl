@@ -28,7 +28,7 @@ processPreview[jsonData_] := Module[{result, requestData, response},
     result = PreviewFunction[response];
     Print["Result: ", result];
     <| "command" -> "preview",
-      "result" ->
+      "preview" ->
           <|
             "latex" -> result["latexString"],
             "sympy" -> result["sympyString"]
