@@ -14,9 +14,9 @@
 
 (* For new style packages see: https://mathematica.stackexchange.com/a/176489) *)
 (* Declare package context *)
-BeginPackage["preview`"]
+BeginPackage["preview`"];
 
-PreviewFunction[response_] := Module[{parsedResponse, latexString, wolframString},
+PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse},
   Print["Running Preview Function"];
   Print["Preview Input:", response];
 
@@ -32,23 +32,17 @@ PreviewFunction[response_] := Module[{parsedResponse, latexString, wolframString
     ]
   ];
 
-  latexString = ToString[TeXForm[parsedResponse]];
-  wolframString = ToString[InputForm[parsedResponse]];
+  latexString = ToString[parsedResponse, TeXForm];
+  wolframString = ToString[parsedResponse, InputForm];
 
-  (*  Below is the current format expected by Lambda Feedback. Both the latex and sympy fields are currently required.
-  To suggest that sympy gets renamed to parsed-expression or similar.*)
   <|
-        "command" -> "preview",
-        "result" -> <|
-          "preview" -> <|
-            "latex" -> latexString,
-            "sympy" -> wolframString
-          |>
-        |>
-  |>
-]
+        "parsedResponse" -> ToString[parsedResponse],
+        "latexString" -> latexString,
+        "sympyString" -> wolframString
+    |>
+];
 
-Begin["`Private`"]
+Begin["`Private`"];
 
 SafeToExpression[str_String] :=
   Module[{expr, result},
@@ -85,5 +79,5 @@ SafeToExpression[str_String] :=
 
 
 
-End[]
-EndPackage[]
+End[];
+EndPackage[];
