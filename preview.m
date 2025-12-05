@@ -36,9 +36,8 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
   wolframString = ToString[parsedResponse, InputForm];
 
   <|
-        "parsedResponse" -> ToString[parsedResponse],
-        "latexString" -> latexString,
-        "sympyString" -> wolframString
+        "latex" -> latexString,
+        "sympy" -> wolframString
     |>
 ];
 
