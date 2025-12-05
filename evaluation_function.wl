@@ -33,12 +33,16 @@ processPreview[jsonData_] := Module[{result, requestData, response},
 evalQuestionIO = Function[
   Module[{jsonData, command, resultAssoc, response},
     jsonData = Import[#1, "JSON"] //. List :> Association;
-    command = jsonData["method"];
+
+    Print["Input"];
+    Print[jsonData]
+
+    command = Lookup[jsonData, "method", "unknown"];
 
     resultAssoc = Which[
       command == "eval", processEvaluate[jsonData],
       command == "preview", processPreview[jsonData],
-      True, "Incorrect command"
+      True, <| "status" -> "error", "message" -> "Incorrect command" |>
     ];
 
     Print["Outputted JSON"];
