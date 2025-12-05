@@ -35,11 +35,11 @@ evalQuestionIO = Function[
     jsonData = Import[#1, "JSON"] //. List :> Association;
     command = jsonData["method"];
 
-    resultAssoc = Which[
+    resultAssoc = ExportForm[Which[
       command == "eval", processEvaluate[jsonData],
       command == "preview", processPreview[jsonData],
       True, "Incorrect command"
-    ];
+    ]];
 
     Print["Outputted JSON"];
     Print[resultAssoc];
