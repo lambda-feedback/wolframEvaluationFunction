@@ -1,6 +1,6 @@
 {
-  "method": "preview",
+  "command": "preview",
   "params": {
-	"response":"Sin[a x + b]"
+	"response":"\\sin{p x}"
 	}
 }

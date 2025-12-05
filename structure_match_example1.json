@@ -1,10 +1,10 @@
 {
-  "method": "eval",
+  "command": "eval",
   "params": {
-    "answer":"Sin[p x + q]",
-	"response":"Sin[a x + b]",
+    "answer":"n!!",
+	"response":"a!!",
 	"params":{
-		"comparisonType":"structure",
+		"type":"structure",
 		"named_variables":"{x}",
 		"correct_response_feedback":"Your answer is correct!",
 		"incorrect_response_feedback":"Your answer is incorrect!"

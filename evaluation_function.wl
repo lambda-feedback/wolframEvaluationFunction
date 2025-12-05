@@ -16,7 +16,23 @@ processEvaluate[jsonData_] := Module[{result, requestData, answer, response, par
     Print["Evaluating Response Against Answer"];
     result = EvaluationFunction[type, answer, response, params];
     Print["Output: ", result];
-    <| "command" -> "eval", "result" -> result |>
+
+    If[result["error"] != Null,
+      Return[
+      <| "command" -> "eval",
+        "error" -> <|
+          "message" -> result["error"]
+        |>
+      |>
+      ]
+    ];
+
+    <| "command" -> "eval",
+      "result" -> <|
+        "is_correct" -> result["is_correct"],
+        "feedback" -> result["feedback"]
+      |>
+    |>
 ]
 
 processPreview[jsonData_] := Module[{result, requestData, response},
@@ -27,6 +43,16 @@ processPreview[jsonData_] := Module[{result, requestData, response},
 
     result = PreviewFunction[response];
     Print["Result: ", result];
+
+    If[result["error"] != Null,
+      Return[
+      <| "command" -> "eval",
+        "error" -> <|
+          "message" -> result["error"]
+        |>
+      |>
+      ]
+    ];
 
     <| "command" -> "preview",
       "result" ->
