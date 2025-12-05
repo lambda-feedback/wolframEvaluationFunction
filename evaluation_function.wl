@@ -11,7 +11,7 @@ processEvaluate[jsonData_] := Module[{result, requestData, answer, response, par
     answer = requestData["answer"];
     response = requestData["response"];
     params = requestData["params"];
-    type = params["comparisonType"];
+    type = params["type"];
 
     Print["Evaluating Response Against Answer"];
     result = EvaluationFunction[type, answer, response, params];
@@ -27,7 +27,13 @@ processPreview[jsonData_] := Module[{result, requestData, response},
 
     result = PreviewFunction[response];
     Print["Result: ", result];
-    <| "command" -> "preview", "result" -> result |>
+    <| "command" -> "preview",
+      "result" ->
+          <|
+            "latex" -> result["latexString"],
+            "sympy" -> result["sympyString"]
+          |>
+    |>
 ]
 
 evalQuestionIO = Function[
