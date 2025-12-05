@@ -16,28 +16,24 @@
 
 (* For new style packages see: https://mathematica.stackexchange.com/a/176489) *)
 (* Declare package context *)
-BeginPackage["evaluate`"]
+BeginPackage["evaluate`"];
 
 EvaluationFunction[type_, answer_, response_, params_] := Module[{result, feedback},
   Print["Running Evaluation Function"];
   result = evalQ[type, answer, response, params];
-  Print["Results"];
-  Print[result];
   feedback = If[result["is_correct"],
       Lookup[params, "correct_response_feedback", "Correct!"],
       Lookup[params, "incorrect_response_feedback", "Incorrect!"]
       ];
-  <|
-    "command" -> "eval",
-    "result" -> <|
-      "is_correct" -> result["is_correct"],
-      "feedback" -> feedback,
-      "error" -> result["error"]
-    |>
-  |>
-]
 
-Begin["`Private`"]
+  <|
+    "is_correct" -> result["is_correct"],
+    "feedback" -> feedback,
+    "error" -> result["error"]
+  |>
+];
+
+Begin["`Private`"];
 
 equalQNumeric[answer_, response_, params_] := Module[{tolerance},
   Print["Evaluating Equal Numeric"];
@@ -174,40 +170,5 @@ evalQ[type_, answer_, response_, params_] := Module[{},
     equalQOther[answer, response, params]
   ]
 ];
-
-EvaluationFunction[type_, answer_, response_, params_] := Module[{result,feedback},
-  Print["Running Evaluation Function"];
-  result = evalQ[type, answer, response, params];
-  Print["Results"];
-  Print[result];
-  feedback = If[result["is_correct"],
-      Lookup[params, "correct_response_feedback", "Correct!"],
-      Lookup[params, "incorrect_response_feedback", "Incorrect!"]
-      ];
-  <|
-        "command" -> "eval",
-        "result" -> <|
-          "is_correct" -> result["is_correct"],
-          "feedback" -> feedback,
-          "error" -> result["error"]
-        |>
-  |>
-];
-
-evalQuestionIO = Function[
-  Module[{jsonData, result,requestData,answer,response,params,type},
-    jsonData = Import[#1, "JSON"] //. List :> Association;
-    requestData = jsonData["params"];
-    answer = requestData["answer"];
-    response = requestData["response"];
-    params = requestData["params"];
-    type = params["comparisonType"];
-    Print["Evaluating Response Against Answer"];
-    result = EvaluationFunction[type, answer, response, params];
-    Print["Response"];
-    Print[result];
-    Export[#2, result, "JSON", "Compact" -> True]
-  ]
-];
-End[]
+End[];
 EndPackage[]
