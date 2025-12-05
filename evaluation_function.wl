@@ -35,9 +35,9 @@ evalQuestionIO = Function[
     jsonData = Import[#1, "JSON"] //. List :> Association;
 
     Print["Input"];
-    Print[jsonData]
+    Print[jsonData];
 
-    command = Lookup[jsonData, "method", "unknown"];
+    command = Lookup[jsonData, "command", "unknown"];
 
     resultAssoc = Which[
       command == "eval", processEvaluate[jsonData],
