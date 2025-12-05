@@ -16,7 +16,7 @@ processEvaluate[jsonData_] := Module[{result, requestData, answer, response, par
     Print["Evaluating Response Against Answer"];
     result = EvaluationFunction[type, answer, response, params];
     Print["Output: ", result];
-    result
+    <| "command" -> "eval", "result" -> result |>
 ]
 
 processPreview[jsonData_] := Module[{result, requestData, response},
@@ -27,19 +27,19 @@ processPreview[jsonData_] := Module[{result, requestData, response},
 
     result = PreviewFunction[response];
     Print["Result: ", result];
-    result
+    <| "command" -> "preview", "result" -> result |>
 ]
 
 evalQuestionIO = Function[
-  Module[{jsonData, command, resultAssoc},
+  Module[{jsonData, command, resultAssoc, response},
     jsonData = Import[#1, "JSON"] //. List :> Association;
     command = jsonData["method"];
 
-    resultAssoc = ExportForm[Which[
+    resultAssoc = Which[
       command == "eval", processEvaluate[jsonData],
       command == "preview", processPreview[jsonData],
       True, "Incorrect command"
-    ]];
+    ];
 
     Print["Outputted JSON"];
     Print[resultAssoc];
