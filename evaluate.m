@@ -5,7 +5,7 @@
 
 (* :Title: evaluate *)
 (* :Context: evaluate` *)
-(* :Author: marcus *)
+(* :Author: marcus/phil *)
 (* :Date: 2025-09-26 *)
 
 (* :Package Version: 0.1 *)
