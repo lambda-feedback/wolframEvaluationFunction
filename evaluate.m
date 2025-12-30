@@ -66,6 +66,7 @@ PatternizeSymbol[a_Symbol, namedVariables_, OptionsPattern[]] /;
   Not[MemberQ[namedVariables, a]] := \!\(\*
 TagBox[
 StyleBox[
+RowBox[{"\n", "  ", 
 RowBox[{"If", "[", 
 RowBox[{
 RowBox[{"OptionValue", "[", "Atomic", "]"}], ",", 
@@ -75,12 +76,12 @@ RowBox[{"PatternTest", "[",
 RowBox[{
 RowBox[{"pattern", "[", 
 RowBox[{"a", ",", 
-RowBox[{"Blank", "[", "]"}]}], "]"}], ",", "AtomQ"}], "]"}], "]"}], ")"}], ",", 
+RowBox[{"Blank", "[", "]"}]}], "]"}], ",", "AtomQ"}], "]"}], "]"}], ")"}], ",", "\n", "  ", 
 RowBox[{"(", 
 RowBox[{"Optional", "[", 
 RowBox[{"pattern", "[", 
 RowBox[{"a", ",", 
-RowBox[{"Blank", "[", "]"}]}], "]"}], "]"}], ")"}]}], "]"}],
+RowBox[{"Blank", "[", "]"}]}], "]"}], "]"}], ")"}]}], "]"}]}],
 ShowSpecialCharacters->False,
 ShowStringCharacters->True,
 NumberMarks->True],
@@ -102,16 +103,6 @@ DepatternizePattern[pattern_Optional] := pattern[[1, 1, 1]]
 
 DepatternizePattern[pattern_] := pattern
 
-ComplexResolve[Optional[a_Symbol] + I Optional[b_Symbol]] := 
- Complex[a, b]
-
-ComplexResolve[I Optional[b_Symbol]*Pi] := Complex[0, b]*Pi
-
-ComplexResolve[Complex[0, Optional[b_Symbol]] + Optional[a_Symbol]] :=
-  Complex[a, b]
-
-ComplexResolve[a_] := a
-
 Options[Patternize] = {Atomic -> False};
 
 Patternize[expression_, namedVariables_, OptionsPattern[]] := 
@@ -125,24 +116,43 @@ Depatternize[pattern_] := MapAll[DepatternizePattern, pattern]
 has the same structure as a given answer template, given a set of \
 named variables.*)
 
-inertFunctionRules = {Sin -> fSin,sin->fSin, Cos -> fCos,cos->fCos, Tan -> fTan, tan->fTan,
-   Sec -> fSec,sec->fSec, Csc -> fCsc,Cosec->fCsc,csc->fCsc,cosec->fCsc, Cot -> fCot, cot->fCot,ArcSin -> fArcSin, arcsin->fArcSin,asin->fArcSin,
-   ArcCos -> fArcCos,arccos->fArcCos,acos->fArcCos, ArcTan -> fArcTan,arctan->fArcTan,atan->fArcTan, ArcSec -> fArcSec, arcsec->fArcSec,asec->fArcSec,
-   ArcCsc -> fArcCsc,ArcCosec->fArcCsc,arccsc->fArcCsc,acsc->fArcCsc,acosec->fArcCsc, ArcCot -> fArcCot,arccot->fArcCot,acot->fArcCot, Sinh -> fSinh,sinh->fSinh, Cosh -> fCosh,cosh->fCosh,anh -> fTanh,tanh->fTanh, Sech -> fSech,sech->fSech, Csch -> fCsch,Cosech->fCsch,csch->fCsch,cosech->fCsch, Coth -> fCoth, coth->fCoth,
-   ArcSinh -> fArcSinh, arcsinh->fArcSinh,asinh->fArcSinh, ArcCosh -> fArcCosh,arccosh->fArcCosh,acosh->fArcCosh, ArcTanh -> fArcTanh,arctanh->fArcTanh,atanh->fArcTanh, 
-    ArcSech -> fArcSech, arcsech->fArcSech,asech->fArcSech, ArcCsch -> fArcCsch,ArcCosech->fArcCsch,arccsch->fArcCsch,acsch->fArcCsch,acosech->fArcCsch, ArcCoth -> fArcCoth,arccoth->fArcCoth,acoth->fArcCoth, 
-   Exp -> fExp,exp->fExp, Log -> fLog,log->fLog};
+inertFunctionRules = {
+   Sin -> fSin, sin -> fSin, Cos -> fCos,cos->fCos, Tan -> fTan, tan -> fTan,
+   Sec -> fSec, sec -> fSec, Csc -> fCsc, Cosec -> fCsc, csc -> fCsc, cosec -> fCsc, Cot -> fCot, cot -> fCot, 
+   ArcSin -> fArcSin, arcsin -> fArcSin, asin -> fArcSin, ArcCos -> fArcCos, arccos -> fArcCos, acos -> fArcCos, 
+   ArcTan -> fArcTan, arctan -> fArcTan, atan -> fArcTan, 
+   ArcSec -> fArcSec, arcsec -> fArcSec, asec -> fArcSec, 
+   ArcCsc -> fArcCsc, ArcCosec -> fArcCsc, arccsc -> fArcCsc, acsc -> fArcCsc, acosec -> fArcCsc, 
+   ArcCot -> fArcCot, arccot -> fArcCot, acot -> fArcCot, 
+   Sinh -> fSinh, sinh -> fSinh, Cosh -> fCosh, cosh -> fCosh, tanh -> fTanh, tanh->fTanh, 
+   Sech -> fSech, sech -> fSech, Csch -> fCsch, Cosech -> fCsch, csch -> fCsch, cosech -> fCsch, Coth -> fCoth, coth->fCoth,
+   ArcSinh -> fArcSinh, arcsinh -> fArcSinh, asinh -> fArcSinh, ArcCosh -> fArcCosh, arccosh -> fArcCosh, acosh -> fArcCosh, 
+   ArcTanh -> fArcTanh, arctanh -> fArcTanh, atanh -> fArcTanh, 
+   ArcSech -> fArcSech, arcsech -> fArcSech, asech -> fArcSech, 
+   ArcCsch -> fArcCsch, ArcCosech -> fArcCsch, arccsch -> fArcCsch, acsch -> fArcCsch, acosech -> fArcCsch, 
+   ArcCoth -> fArcCoth, arccoth -> fArcCoth, acoth->fArcCoth, 
+   Exp -> fExp, exp -> fExp, Log -> fLog, log -> fLog, ln -> fLog};
+
+ComplexSymbolize[a_Integer?Positive]:=Symbol["$sym"<>ToString[a]]
+
+ComplexSymbolize[a_Integer?Negative]:=Symbol["$symmin"<>ToString[-a]]
+
+ComplexSymbolize[a_Rational] :=Symbol["$num"<>ToString[Numerator[a]]<>"den"<>ToString[Denominator[a]]]
+
+ComplexSymbolize[0]:=0
+
+CanonicComplex[Complex[a_,b_]]:=ComplexSymbolize[a]+ComplexSymbolize[b] I
+
+CanonicComplex[I]:=I
+
+CanonicComplex[arg_]:=arg
    
 Options[StructureMatchQ] = {Atomic -> False};
 
-StructureMatchQ[response_, answerTemplate_, namedVariables_, 
-  OptionsPattern[]] := 
- Module[{response2, answerTemplate2}, 
-  response2 = ReplaceAll[response, inertFunctionRules]; 
-  answerTemplate2 = ReplaceAll[answerTemplate, inertFunctionRules]; 
-  MatchQ[response2, 
-   Patternize[answerTemplate2, namedVariables, 
-    Atomic -> OptionValue[Atomic]]]]
+StructureMatchQ[response_,answerTemplate_,namedVariables_] := 
+	Module[{response2,answerTemplate2},response2=MapAll[CanonicComplex,ReplaceAll[response,inertFunctionRules]];
+		answerTemplate2=ReplaceAll[answerTemplate,inertFunctionRules];
+		MatchQ[response2,Patternize[answerTemplate2,namedVariables]]]
 
 equalQStructure[answer_, response_, params_] := Module[{namedVariables,correctQ},
   Print["Evaluating Structure"];
@@ -158,12 +168,66 @@ equalQStructure[answer_, response_, params_] := Module[{namedVariables,correctQ}
     |>
 ]
 
+(* SemanticAndStructureMatchQ: a function that checks whether a user's response both 
+	(a) is the same mathematical object as a given answer,and (b) has the same structure as a given answer template,
+	given a set of named variables. *)
+
+activeFunctionRules = {
+	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
+	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
+	arcsec -> ArcSec, asec -> ArcSec, ArcCosec -> ArcCsc, arccsc -> ArcCsc, acsc -> ArcCsc, acosec -> ArcCsc,
+	arccot -> ArcCot,acot -> ArcCot, 
+	sinh -> Sinh, cosh -> Cosh, tanh -> Tanh, sech -> Sech, Cosech -> Csch, csch -> Csch, cosech -> Csch, coth -> Coth, 
+	arcsinh -> ArcSinh, asinh -> ArcSinh, arccosh -> ArcCosh, acosh -> ArcCosh, arctanh -> ArcTanh, atanh -> ArcTanh, 
+	arcsech -> ArcSech, asech -> ArcSech, 
+	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
+	arccoth -> ArcCoth, acoth -> ArcCoth,
+	exp -> Exp, log -> Log, ln -> Log};
+
+SemanticMatchQ[response_,answer_] := Simplify[(response-answer)/.activeFunctionRules] == 0
+
+SemanticAndStructureMatchQ[response_,answer_,answerTemplate_,namedVariables_] :=
+	TrueQ[SemanticMatchQ[response,answer]&&StructureMatchQ[response,answerTemplate,namedVariables]]
+
+equalQSemantic[answer_, response_, params_] := Module[{correctQ},
+  Print["Evaluating Semantic"];
+	correctQ = SemanticMatchQ[
+		ToExpression[ToString[response],TraditionalForm],
+		ToExpression[ToString[answer],TraditionalForm]];
+		
+	<|
+		"error" -> Null,
+		"is_correct" -> correctQ
+    |>
+]
+
+equalQSemanticAndStructure[answer_, response_, params_] := Module[{namedVariables,answerTemplate,correctQ},
+  Print["Evaluating SemanticAndStructure"];
+    namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
+    answerTemplate = ToExpression[Lookup[params,"answer_template",{}],TraditionalForm];
+	correctQ = SemanticAndStructureMatchQ[
+		ToExpression[ToString[response],TraditionalForm],
+		ToExpression[ToString[answer],TraditionalForm],
+		ToExpression[ToString[answerTemplate],TraditionalForm],
+		namedVariables
+		];
+
+	<|
+		"error" -> Null,
+		"is_correct" -> correctQ
+    |>
+]
+
 (* The evaluation function itself *)
 
 evalQ[type_, answer_, response_, params_] := Module[{},
   Which[
 	type == "structure",
 	equalQStructure[answer,response,params],
+	type == "semantic",
+	equalQSemantic[answer,response,params],
+	type = "semantic_and_structure",	
+	equalQSemanticAndStructure[answer,response,params],
 	NumericQ[answer],
     equalQNumeric[answer, response, params],
     True,
