@@ -1,3 +1,5 @@
+(* ::Package:: *)
+
 (* Wolfram Language Package *)
 (* Created by the Wolfram Language Plugin for IntelliJ, see http://wlplugin.halirutan.de/ *)
 
@@ -33,7 +35,7 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
   ];
 
   latexString = ToString[parsedResponse, TeXForm];
-  wolframString = ToString[parsedResponse, InputForm];
+  wolframString = ToExpression[ToString[parsedResponse],TraditionalForm]/.activeFunctionRules ;
 
   <|
         "latex" -> latexString,
@@ -42,6 +44,18 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
 ];
 
 Begin["`Private`"];
+
+activeFunctionRules = {
+	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
+	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
+	arcsec -> ArcSec, asec -> ArcSec, ArcCosec -> ArcCsc, arccsc -> ArcCsc, acsc -> ArcCsc, acosec -> ArcCsc,
+	arccot -> ArcCot,acot -> ArcCot, 
+	sinh -> Sinh, cosh -> Cosh, tanh -> Tanh, sech -> Sech, Cosech -> Csch, csch -> Csch, cosech -> Csch, coth -> Coth, 
+	arcsinh -> ArcSinh, asinh -> ArcSinh, arccosh -> ArcCosh, acosh -> ArcCosh, arctanh -> ArcTanh, atanh -> ArcTanh, 
+	arcsech -> ArcSech, asech -> ArcSech, 
+	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
+	arccoth -> ArcCoth, acoth -> ArcCoth,
+	exp -> Exp, log -> Log, ln -> Log};
 
 SafeToExpression[str_String] :=
   Module[{expr, result},
