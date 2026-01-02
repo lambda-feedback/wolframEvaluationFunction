@@ -43,8 +43,6 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
     |>
 ];
 
-Begin["`Private`"];
-
 activeFunctionRules = {
 	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
 	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
@@ -56,6 +54,8 @@ activeFunctionRules = {
 	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
 	arccoth -> ArcCoth, acoth -> ArcCoth,
 	exp -> Exp, log -> Log, ln -> Log};
+
+Begin["`Private`"];
 
 SafeToExpression[str_String] :=
   Module[{expr, result},
