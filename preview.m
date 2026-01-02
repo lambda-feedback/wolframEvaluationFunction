@@ -35,7 +35,7 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
   ];
 
   latexString = ToString[parsedResponse, TeXForm];
-  wolframString = ToString[ToExpression[ToString[parsedResponse],TraditionalForm]/.activeFunctionRules];
+  wolframString = StringReplace[ToString[parsedResponse], activeFunctionRules];
 
   <|
         "latex" -> latexString,
@@ -45,17 +45,34 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
 
 Begin["`Private`"];
 
-activeFunctionRules = {
-	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
-	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
-	arcsec -> ArcSec, asec -> ArcSec, ArcCosec -> ArcCsc, arccsc -> ArcCsc, acsc -> ArcCsc, acosec -> ArcCsc,
-	arccot -> ArcCot,acot -> ArcCot, 
-	sinh -> Sinh, cosh -> Cosh, tanh -> Tanh, sech -> Sech, Cosech -> Csch, csch -> Csch, cosech -> Csch, coth -> Coth, 
-	arcsinh -> ArcSinh, asinh -> ArcSinh, arccosh -> ArcCosh, acosh -> ArcCosh, arctanh -> ArcTanh, atanh -> ArcTanh, 
-	arcsech -> ArcSech, asech -> ArcSech, 
-	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
-	arccoth -> ArcCoth, acoth -> ArcCoth,
-	exp -> Exp, log -> Log, ln -> Log};
+activeFunctionRules =  {
+  (* Trig functions *)
+  "sin" -> "Sin", "cos" -> "Cos", "tan" -> "Tan",
+  "sec" -> "Sec", "csc" -> "Csc", "cosec" -> "Csc", "Cosec" -> "Csc", "cot" -> "Cot",
+
+  (* Inverse trig functions *)
+  "arcsin" -> "ArcSin", "asin" -> "ArcSin",
+  "arccos" -> "ArcCos", "acos" -> "ArcCos",
+  "arctan" -> "ArcTan", "atan" -> "ArcTan",
+  "arcsec" -> "ArcSec", "asec" -> "ArcSec",
+  "arccsc" -> "ArcCsc", "acsc" -> "ArcCsc", "arccosec" -> "ArcCsc", "acosec" -> "ArcCsc", "ArcCosec" -> "ArcCsc",
+  "arccot" -> "ArcCot", "acot" -> "ArcCot",
+
+  (* Hyperbolic functions *)
+  "sinh" -> "Sinh", "cosh" -> "Cosh", "tanh" -> "Tanh",
+  "sech" -> "Sech", "csch" -> "Csch", "cosech" -> "Csch", "Cosech" -> "Csch", "coth" -> "Coth",
+
+  (* Inverse hyperbolic functions *)
+  "arcsinh" -> "ArcSinh", "asinh" -> "ArcSinh",
+  "arccosh" -> "ArcCosh", "acosh" -> "ArcCosh",
+  "arctanh" -> "ArcTanh", "atanh" -> "ArcTanh",
+  "arcsech" -> "ArcSech", "asech" -> "ArcSech",
+  "arccsch" -> "ArcCsch", "acsch" -> "ArcCsch", "arccosech" -> "ArcCsch", "acosech" -> "ArcCsch", "ArcCosech" -> "ArcCsch", "ArcCsch" -> "ArcCsch",
+  "arccoth" -> "ArcCoth", "acoth" -> "ArcCoth",
+
+  (* Other functions *)
+  "exp" -> "Exp", "log" -> "Log", "ln" -> "Log"
+};
 
 SafeToExpression[str_String] :=
   Module[{expr, result},
