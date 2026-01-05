@@ -218,6 +218,62 @@ equalQSemanticAndStructure[answer_, response_, params_] := Module[{namedVariable
     |>
 ]
 
+(* UnnamedSymbols: a function that takes an expression and a list of named variables,
+   and returns all other symbolic quantities in the expression. *)
+
+UnnamedSymbols[expression_,namedVariables_] := 
+	Cases[Reap[Scan[Sow,expression,{-1}]][[2,1]],a_Symbol/;Not[MemberQ[namedVariables,a]]]
+
+(* StrictStructureMatchQ: a function that matches structures more strictly,taking account of the unnamed symbols 
+	in each.*)
+
+(* THIS FUNCTION IS FLAWED, AND REPRESENTS A CRUDE FIRST GO *)
+
+(* IN PARTICULAR, THE COMPARISON OF THE LENGTHS OF THE SYMBOL LISTS IS VERY HAMFISTED *)
+
+StrictStructureMatchQ[response_,answerTemplate_,namedVariables_] := 
+	StructureMatchQ[response,answerTemplate,namedVariables]&&
+	TrueQ[
+		(Length[Union[UnnamedSymbols[response,namedVariables]]]==
+		 Length[Union[UnnamedSymbols[answerTemplate,namedVariables]]])]
+
+(* SemanticAndStrictStructureMatchQ: a function that combines a strict structure comparison with a test of
+	mathematical equivalence  *)
+
+SemanticAndStrictStructureMatchQ[response_,answer_,answerTemplate_,namedVariables_] := 
+	TrueQ[SemanticMatchQ[response,answer]&&StrictStructureMatchQ[response,answerTemplate,namedVariables]]
+	
+equalQStrictStructure[answer_, response_, params_] := Module[{namedVariables,correctQ},
+  Print["Evaluating Structure"];
+	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
+	correctQ = StrictStructureMatchQ[
+		ToExpression[ToString[response],TraditionalForm],
+		ToExpression[ToString[answer],TraditionalForm],
+		namedVariables];
+
+	<|
+		"error" -> Null,
+		"is_correct" -> correctQ
+    |>
+]
+
+equalQSemanticAndStrictStructure[answer_, response_, params_] := Module[{namedVariables,answerTemplate,correctQ},
+  Print["Evaluating SemanticAndStructure"];
+    namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
+    answerTemplate = ToExpression[Lookup[params,"answer_template",{}],TraditionalForm];
+	correctQ = SemanticAndStrictStructureMatchQ[
+		ToExpression[ToString[response],TraditionalForm],
+		ToExpression[ToString[answer],TraditionalForm],
+		ToExpression[ToString[answerTemplate],TraditionalForm],
+		namedVariables
+		];
+
+	<|
+		"error" -> Null,
+		"is_correct" -> correctQ
+    |>
+]
+
 (* The evaluation function itself *)
 
 evalQ[type_, answer_, response_, params_] := Module[{},
@@ -228,6 +284,10 @@ evalQ[type_, answer_, response_, params_] := Module[{},
 	equalQSemantic[answer,response,params],
 	type = "semantic_and_structure",	
 	equalQSemanticAndStructure[answer,response,params],
+	type = "strict_structure",	
+	equalQStrictStructure[answer,response,params],
+	type = "semantic_and_strict_structure",	
+	equalQSemanticAndStrictStructure[answer,response,params],
 	NumericQ[answer],
     equalQNumeric[answer, response, params],
     True,
