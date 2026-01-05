@@ -34,7 +34,7 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
     ]
   ];
 
-  latexString = ToString[parsedResponse, TeXForm];
+  latexString = ToString[ToExpression[ToString[parsedResponse],TraditionalForm]/.activeFunctionRules, TeXForm];
   wolframString = ToString[ToExpression[ToString[parsedResponse],TraditionalForm]/.activeFunctionRules];
 
   <|
