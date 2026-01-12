@@ -34,8 +34,8 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
     ]
   ];
 
-  latexString = ToString[ToExpression[ToString[parsedResponse,InputForm],TraditionalForm]/.activeFunctionRules, TeXForm];
-  wolframString = ToString[ToExpression[ToString[parsedResponse,InputForm],TraditionalForm]/.activeFunctionRules];
+    latexString = ToString[parsedResponse/.activeFunctionRules, TeXForm];
+  wolframString = ToString[parsedResponse/.activeFunctionRules];
 
   <|
         "latex" -> latexString,
@@ -67,7 +67,7 @@ SafeToExpression[str_String] :=
 
     (* Try to parse the expression safely *)
     result = Quiet @ Check[
-      ToExpression[str, InputForm, Hold],
+      ToExpression[str, TraditionalForm, Hold],
       Return["Error: Failed to parse expression"]
     ];
 
