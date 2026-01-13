@@ -35,7 +35,7 @@ PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse
   ];
 
     latexString = ToString[parsedResponse/.activeFunctionRules, TeXForm];
-  wolframString = ToString[parsedResponse/.activeFunctionRules];
+    wolframString = ToString[parsedResponse/.activeFunctionRules, InputForm];
 
   <|
         "latex" -> latexString,
@@ -67,7 +67,7 @@ SafeToExpression[str_String] :=
 
     (* Try to parse the expression safely *)
     result = Quiet @ Check[
-      ToExpression[str, TraditionalForm, Hold],
+      ToExpression[StandardizeEquation[str], TraditionalForm, Hold],
       Return["Error: Failed to parse expression"]
     ];
 
@@ -89,6 +89,12 @@ SafeToExpression[str_String] :=
       "Error: Unexpected parsing result"
     ]
   ]
+  
+(*StandardizeEquation: a function that automatically converts all instances
+of the equals sign in a string to the repeated equals sign, so that anything WL 
+would parse as an assignment gets parsed instead as an equation*)
+
+StandardizeEquation[str_String]:=FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]]
 
 
 

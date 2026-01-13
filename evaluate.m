@@ -113,11 +113,10 @@ Patternize[expression_, namedVariables_, OptionsPattern[]] :=
 Depatternize[pattern_] := MapAll[DepatternizePattern, pattern]
 
 (*StandardizeEquation: a function that automatically converts all instances
-of the equals sign to the repeated equals sign, so that anything WL would
-parse as an assignment gets parsed instead as an equu
-ation*)
+of the equals sign in a string to the repeated equals sign, so that anything WL 
+would parse as an assignment gets parsed instead as an equation*)
 
-StandardizeEquation[str_]:=FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]]
+StandardizeEquation[str_String]:=FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]]
 
 (*StructureMatchQ: a function that checks whether a user's response \
 has the same structure as a given answer template, given a set of \
@@ -156,17 +155,17 @@ CanonicComplex[arg_]:=arg
    
 Options[StructureMatchQ] = {Atomic -> False};
 
-StructureMatchQ[response_,answerTemplate_,namedVariables_] := 
+StructureMatchQ[answerTemplate_String,response_String,namedVariables_List] := 
 	Module[{response2,answerTemplate2},response2=MapAll[CanonicComplex,ReplaceAll[response,inertFunctionRules]];
 		answerTemplate2=ReplaceAll[answerTemplate,inertFunctionRules];
 		MatchQ[response2,Patternize[answerTemplate2,namedVariables]]]
 
-equalQStructure[answer_, response_, params_] := Module[{namedVariables,correctQ},
+equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ},
   Print["Evaluating Structure"];
-	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
+	namedVariables = FullForm[ToExpression[Lookup[params,"named_variables",{}],TraditionalForm]];
 	correctQ = StructureMatchQ[
-		ToExpression[StandardizeEquation[ToString[response]],TraditionalForm],
-		ToExpression[StandardizeEquation[ToString[answer]],TraditionalForm],
+		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		response,
 		namedVariables];
 
 	<|
@@ -191,20 +190,26 @@ activeFunctionRules = {
 	arccoth -> ArcCoth, acoth -> ArcCoth,
 	exp -> Exp, log -> Log, ln -> Log};
 
-SemanticMatchQ[response_,answer_] := Simplify[(response-answer)/.activeFunctionRules] == 0
+SemanticMatchQ[answer_,response_] := Simplify[(response-answer)/.activeFunctionRules] == 0
 
-SemanticMatchQ[response_Equal, answer_Equal] := 
-	SemanticMatchQ[response[[1]]-response[[2]], answer[[1]]-answer[[2]]]||
-	SemanticMatchQ[response[[1]]-response[[2]], answer[[2]]-answer[[1]]]
+SemanticMatchQ[answer_Equal, response_Equal] := 
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]]]||
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]]]
 
-SemanticAndStructureMatchQ[response_,answer_,answerTemplate_,namedVariables_] :=
-	TrueQ[SemanticMatchQ[response,answer]&&StructureMatchQ[response,answerTemplate,namedVariables]]
+SemanticMatchQ[answer_String,response_String] := 
+  SemanticMatchQ[
+    ToExpression[answer],
+    ToExpression[response]
+  ]
 
-equalQSemantic[answer_, response_, params_] := Module[{correctQ},
+SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] :=
+	TrueQ[SemanticMatchQ[answer,response]&&StructureMatchQ[answerTemplate,response,namedVariables]]
+
+equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ},
   Print["Evaluating Semantic"];
 	correctQ = SemanticMatchQ[
-		ToExpression[StandardizeEquation[ToString[response]],TraditionalForm],
-		ToExpression[StandardizeEquation[ToString[answer]],TraditionalForm]];
+		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],		
+		response];
 		
 	<|
 		"error" -> Null,
@@ -212,14 +217,14 @@ equalQSemantic[answer_, response_, params_] := Module[{correctQ},
     |>
 ]
 
-equalQSemanticAndStructure[answer_, response_, params_] := Module[{namedVariables,answerTemplate,correctQ},
+equalQSemanticAndStructure[answer_String, response_String, params_Association] := Module[{namedVariables,answerTemplate,correctQ},
   Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
-    answerTemplate = ToExpression[Lookup[params,"answer_template",{}],TraditionalForm];
+    answerTemplate = Lookup[params,"answer_template",{}];
 	correctQ = SemanticAndStructureMatchQ[
-		ToExpression[StandardizeEquation[ToString[response]],TraditionalForm],
-		ToExpression[StandardizeEquation[ToString[answer]],TraditionalForm],
-		ToExpression[StandardizeEquation[ToString[answerTemplate]],TraditionalForm],
+		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		response,
+		ToString[ToExpression[StandardizeEquation[answerTemplate],TraditionalForm],InputForm],
 		namedVariables
 		];
 
@@ -242,24 +247,24 @@ UnnamedSymbols[expression_,namedVariables_] :=
 
 (* IN PARTICULAR, THE COMPARISON OF THE LENGTHS OF THE SYMBOL LISTS IS VERY HAMFISTED *)
 
-StrictStructureMatchQ[response_,answerTemplate_,namedVariables_] := 
-	StructureMatchQ[response,answerTemplate,namedVariables]&&
+StrictStructureMatchQ[answerTemplate_String,response_String,namedVariables_List] := 
+	StructureMatchQ[answerTemplate,response,namedVariables]&&
 	TrueQ[
-		(Length[Union[UnnamedSymbols[response,namedVariables]]]==
-		 Length[Union[UnnamedSymbols[answerTemplate,namedVariables]]])]
+		(Length[Union[UnnamedSymbols[ToExpression[response],namedVariables]]]==
+		 Length[Union[UnnamedSymbols[ToExpression[StandardizeEquation[answerTemplate],TraditionalForm],namedVariables]]])]
 
 (* SemanticAndStrictStructureMatchQ: a function that combines a strict structure comparison with a test of
 	mathematical equivalence  *)
 
-SemanticAndStrictStructureMatchQ[response_,answer_,answerTemplate_,namedVariables_] := 
-	TrueQ[SemanticMatchQ[response,answer]&&StrictStructureMatchQ[response,answerTemplate,namedVariables]]
+SemanticAndStrictStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] := 
+	TrueQ[SemanticMatchQ[answer,response]&&StrictStructureMatchQ[answerTemplate,response,namedVariables]]
 	
-equalQStrictStructure[answer_, response_, params_] := Module[{namedVariables,correctQ},
+equalQStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ},
   Print["Evaluating Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
 	correctQ = StrictStructureMatchQ[
-		ToExpression[StandardizeEquation[ToString[response]],TraditionalForm],
-		ToExpression[StandardizeEquation[ToString[answer]],TraditionalForm],
+		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		response,
 		namedVariables];
 
 	<|
@@ -268,14 +273,14 @@ equalQStrictStructure[answer_, response_, params_] := Module[{namedVariables,cor
     |>
 ]
 
-equalQSemanticAndStrictStructure[answer_, response_, params_] := Module[{namedVariables,answerTemplate,correctQ},
+equalQSemanticAndStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,answerTemplate,correctQ},
   Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
-    answerTemplate = ToExpression[Lookup[params,"answer_template",{}],TraditionalForm];
+    answerTemplate = Lookup[params,"answer_template",{}];
 	correctQ = SemanticAndStrictStructureMatchQ[
-		ToExpression[ToString[response],TraditionalForm],
-		ToExpression[ToString[answer],TraditionalForm],
-		ToExpression[ToString[answerTemplate],TraditionalForm],
+		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		response,
+		answerTemplate,
 		namedVariables
 		];
 
@@ -290,15 +295,15 @@ equalQSemanticAndStrictStructure[answer_, response_, params_] := Module[{namedVa
 evalQ[type_, answer_, response_, params_] := Module[{},
   Which[
 	type == "structure",
-	equalQStructure[answer,response,params],
+	equalQStructure[answer, response, params],
 	type == "semantic",
-	equalQSemantic[answer,response,params],
+	equalQSemantic[answer, response, params],
 	type == "semantic_and_structure",	
-	equalQSemanticAndStructure[answer,response,params],
+	equalQSemanticAndStructure[answer, response, params],
 	type == "strict_structure",	
-	equalQStrictStructure[answer,response,params],
+	equalQStrictStructure[answer, response, params],
 	type == "semantic_and_strict_structure",	
-	equalQSemanticAndStrictStructure[answer,response,params],
+	equalQSemanticAndStrictStructure[answer, response, params],
 	NumericQ[answer],
     equalQNumeric[answer, response, params],
     True,
