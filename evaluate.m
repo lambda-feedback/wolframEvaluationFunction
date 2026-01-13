@@ -162,7 +162,7 @@ StructureMatchQ[answerTemplate_String,response_String,namedVariables_List] :=
 
 equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ},
   Print["Evaluating Structure"];
-	namedVariables = FullForm[ToExpression[Lookup[params,"named_variables",{}],TraditionalForm]];
+	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
 	correctQ = StructureMatchQ[
 		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
 		response,
