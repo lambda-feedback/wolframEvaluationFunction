@@ -156,8 +156,9 @@ CanonicComplex[arg_]:=arg
 Options[StructureMatchQ] = {Atomic -> False};
 
 StructureMatchQ[answerTemplate_String,response_String,namedVariables_List] := 
-	Module[{response2,answerTemplate2},response2=MapAll[CanonicComplex,ReplaceAll[response,inertFunctionRules]];
-		answerTemplate2=ReplaceAll[answerTemplate,inertFunctionRules];
+	Module[{response2,answerTemplate2},
+	    response2=MapAll[CanonicComplex,ReplaceAll[ToExpression[response],inertFunctionRules]];
+		answerTemplate2=ReplaceAll[ToExpression[answerTemplate],inertFunctionRules];
 		MatchQ[response2,Patternize[answerTemplate2,namedVariables]]]
 
 equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ},
