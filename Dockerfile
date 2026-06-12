@@ -7,7 +7,7 @@ ENV FUNCTION_COMMAND="wolframscript"
 ENV FUNCTION_ARGS="-f,/app/evaluation_function.wl"
 
 # Interface to use for the evaluation function
-ENV FUNCTION_INTERFACE="file"
+ENV FUNCTION_INTERFACE="rpc"
 
 ENV LOG_LEVEL="DEBUG"
 
