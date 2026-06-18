@@ -197,6 +197,10 @@ SemanticMatchQ[answer_Equal, response_Equal] :=
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]]]||
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]]]
 
+SemanticMatchQ[answer_Equal, response_] := False
+
+SemanticMatchQ[answer_, response_Equal] := False
+
 SemanticMatchQ[answer_String,response_String] := 
   SemanticMatchQ[
     ToExpression[answer],
