@@ -1,8 +1,7 @@
 # Wolfram Language Evaluation Function
 
 This repository contains an implementation of a Wolfram evaluation function that checks if the structure, numeric value or any other value are equal.
-## Deployment
-[![Create Release Request](https://img.shields.io/badge/Create%20Release%20Request-blue?style=for-the-badge)](https://github.com/lambda-feedback/wolframEvaluationFunction/issues/new?template=release-request.yml)
+
 
 ## Development
 

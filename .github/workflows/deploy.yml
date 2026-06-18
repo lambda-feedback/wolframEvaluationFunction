@@ -1,19 +1,18 @@
-name: Deploy to Staging
+name: Deploy to Lambda Feedback
 
 on:
   push:
     branches:
       - main
+      - master
   workflow_dispatch:
 
 jobs:
   deploy:
     uses: lambda-feedback/evaluation-function-workflows/.github/workflows/deploy.yml@main
     with:
-      template-repository-name: "lambda-feedback/evaluation-function-boilerplate-wolfram"
-      build-platforms: "gcp"
-      environment: "staging"
-      lfs: false
+      template-repository-name: 'lambda-feedback/evaluation-function-boilerplate-wolfram'
+      build-platforms: 'gcp'
     secrets:
       aws-key-id: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_ID }}
       aws-secret-key: ${{ secrets.LAMBDA_CONTAINER_PIPELINE_AWS_SECRET}}
