@@ -191,7 +191,7 @@ activeFunctionRules = {
 	arccoth -> ArcCoth, acoth -> ArcCoth,
 	exp -> Exp, log -> Log, ln -> Log};
 
-SemanticMatchQ[answer_,response_] := Simplify[(response-answer)/.activeFunctionRules] == 0
+SemanticMatchQ[answer_,response_] := TrueQ[Simplify[(response-answer)/.activeFunctionRules] == 0]
 
 SemanticMatchQ[answer_Equal, response_Equal] := 
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]]]||
