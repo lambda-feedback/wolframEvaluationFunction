@@ -53,7 +53,7 @@ activeFunctionRules = {
 	arcsech -> ArcSech, asech -> ArcSech, 
 	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
 	arccoth -> ArcCoth, acoth -> ArcCoth,
-	exp -> Exp, log -> Log, ln -> Log, pi -> Pi, e -> E};
+	exp -> Exp, log -> Log, ln -> Log, pi -> Pi, e -> E, i -> I};
 
 Begin["`Private`"];
 

@@ -140,7 +140,7 @@ inertFunctionRules = {
    ArcSech -> fArcSech, arcsech -> fArcSech, asech -> fArcSech, 
    ArcCsch -> fArcCsch, ArcCosech -> fArcCsch, arccsch -> fArcCsch, acsch -> fArcCsch, acosech -> fArcCsch, 
    ArcCoth -> fArcCoth, arccoth -> fArcCoth, acoth->fArcCoth, 
-   Exp -> fExp, exp -> fExp, Log -> fLog, log -> fLog, ln -> fLog, pi -> Pi, e -> E};
+   Exp -> fExp, exp -> fExp, Log -> fLog, log -> fLog, ln -> fLog, pi -> Pi, e -> E, i -> I};
 
 ComplexSymbolize[a_Integer?Positive]:=Symbol["$sym"<>ToString[a]]
 
@@ -192,7 +192,7 @@ activeFunctionRules = {
 	arcsech -> ArcSech, asech -> ArcSech, 
 	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
 	arccoth -> ArcCoth, acoth -> ArcCoth,
-	exp -> Exp, log -> Log, ln -> Log, pi -> Pi, e -> E};
+	exp -> Exp, log -> Log, ln -> Log, pi -> Pi, e -> E, i -> I};
 
 SemanticMatchQ[answer_,response_] := TrueQ[Simplify[(response-answer)/.activeFunctionRules] == 0]
 
