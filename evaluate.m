@@ -112,11 +112,14 @@ Patternize[expression_, namedVariables_, OptionsPattern[]] :=
 
 Depatternize[pattern_] := MapAll[DepatternizePattern, pattern]
 
-(*StandardizeEquation: a function that automatically converts all instances
+(*StandardizeString: a function that automatically converts all instances
 of the equals sign in a string to the repeated equals sign, so that anything WL 
-would parse as an assignment gets parsed instead as an equation*)
+would parse as an assignment gets parsed instead as an equation, and also carries out
+other standard string replacements*)
 
-StandardizeEquation[str_String]:=FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]]
+StandardizeString[str_String]:=StringReplace[
+    FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
+    "**"->"^"]
 
 (*StructureMatchQ: a function that checks whether a user's response \
 has the same structure as a given answer template, given a set of \
@@ -165,7 +168,7 @@ equalQStructure[answer_String, response_String, params_Association] := Module[{n
   Print["Evaluating Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
 	correctQ = StructureMatchQ[
-		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
 		response,
 		namedVariables];
 
@@ -213,7 +216,7 @@ SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,n
 equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ},
   Print["Evaluating Semantic"];
 	correctQ = SemanticMatchQ[
-		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],		
+		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],		
 		response];
 		
 	<|
@@ -227,9 +230,9 @@ equalQSemanticAndStructure[answer_String, response_String, params_Association] :
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
     answerTemplate = Lookup[params,"answer_template",{}];
 	correctQ = SemanticAndStructureMatchQ[
-		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
 		response,
-		ToString[ToExpression[StandardizeEquation[answerTemplate],TraditionalForm],InputForm],
+		ToString[ToExpression[StandardizeString[answerTemplate],TraditionalForm],InputForm],
 		namedVariables
 		];
 
@@ -256,7 +259,7 @@ StrictStructureMatchQ[answerTemplate_String,response_String,namedVariables_List]
 	StructureMatchQ[answerTemplate,response,namedVariables]&&
 	TrueQ[
 		(Length[Union[UnnamedSymbols[ToExpression[response],namedVariables]]]==
-		 Length[Union[UnnamedSymbols[ToExpression[StandardizeEquation[answerTemplate],TraditionalForm],namedVariables]]])]
+		 Length[Union[UnnamedSymbols[ToExpression[StandardizeString[answerTemplate],TraditionalForm],namedVariables]]])]
 
 (* SemanticAndStrictStructureMatchQ: a function that combines a strict structure comparison with a test of
 	mathematical equivalence  *)
@@ -268,7 +271,7 @@ equalQStrictStructure[answer_String, response_String, params_Association] := Mod
   Print["Evaluating Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
 	correctQ = StrictStructureMatchQ[
-		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
 		response,
 		namedVariables];
 
@@ -283,7 +286,7 @@ equalQSemanticAndStrictStructure[answer_String, response_String, params_Associat
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
     answerTemplate = Lookup[params,"answer_template",{}];
 	correctQ = SemanticAndStrictStructureMatchQ[
-		ToString[ToExpression[StandardizeEquation[answer],TraditionalForm],InputForm],
+		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
 		response,
 		answerTemplate,
 		namedVariables

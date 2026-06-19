@@ -67,7 +67,7 @@ SafeToExpression[str_String] :=
 
     (* Try to parse the expression safely *)
     result = Quiet @ Check[
-      ToExpression[StandardizeEquation[str], TraditionalForm, Hold],
+      ToExpression[StandardizeString[str], TraditionalForm, Hold],
       Return["Error: Failed to parse expression"]
     ];
 
@@ -90,11 +90,13 @@ SafeToExpression[str_String] :=
     ]
   ]
   
-(*StandardizeEquation: a function that automatically converts all instances
+(*StandardizeString: a function that automatically converts all instances
 of the equals sign in a string to the repeated equals sign, so that anything WL 
 would parse as an assignment gets parsed instead as an equation*)
 
-StandardizeEquation[str_String]:=FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]]
+StandardizeString[str_String]:=StringReplace[
+    FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
+    "**"->"^"]
 
 
 
