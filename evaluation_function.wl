@@ -62,7 +62,7 @@ processPreview[jsonData_] := Module[{result, requestData, response},
 
 evalQuestionIO = Function[
   Module[{jsonData, command, resultAssoc, response},
-    jsonData = Import[#1, "JSON"] //. List :> Association;
+    jsonData = Import[#1, "JSON"] //. {list : {___Rule} :> Association[list]};
 
     Print["Input"];
     Print[jsonData];
