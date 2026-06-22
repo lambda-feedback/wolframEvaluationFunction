@@ -106,7 +106,7 @@ DepatternizePattern[pattern_] := pattern
 Options[Patternize] = {Atomic -> False};
 
 Patternize[expression_, namedVariables_, OptionsPattern[]] := 
- Map[PatternizeSymbol[#, namedVariables, 
+ Map[PatternizeSymbol[#, Union[namedVariables,{E,Pi}], 
     Atomic -> OptionValue[Atomic]] &, 
   MapAll[ComplexResolve, expression], {-1}]
 
