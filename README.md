@@ -10,6 +10,15 @@ This repository contains an implementation of a Wolfram evaluation function that
 
 You can choose between running the Wolfram evaluation function itself, ore using Shimmy to run the function.
 
+This repository's JSON comms (reading the request, dispatching `eval`/`preview`, writing the response) come from the shared [`toolkit-wolfram`](https://github.com/lambda-feedback/toolkit-wolfram) paclet (`LambdaFeedback/EvaluationFunctionToolkit`, function `ServeFile`) rather than being implemented in this repo. To run locally, set `LF_TOOLKIT_PATH` to point at a local checkout of that repo:
+
+```bash
+git clone https://github.com/lambda-feedback/toolkit-wolfram.git ../toolkit-wolfram
+export LF_TOOLKIT_PATH=../toolkit-wolfram
+```
+
+If `LF_TOOLKIT_PATH` isn't set, `evaluation_function.wl` falls back to `/opt/lambda-feedback/toolkit-wolfram`, which is where the Docker image installs it.
+
 **Local**
 
 Use the following command to run the evaluation function directly:
@@ -23,12 +32,12 @@ An example `request.json` is:
 
 ```
 {
-  "method": "eval",
+  "command": "eval",
   "params": {
     "answer":"Sin[p x + q]",
 	"response":"Sin[a x + b]",
 	"params":{
-		"comparisonType":"structure",
+		"type":"structure",
 		"named_variables":"{x}",
 		"correct_response_feedback":"Your answer is correct!",
 		"incorrect_response_feedback":"Your answer is incorrect!"
@@ -44,8 +53,7 @@ Which gives the response:
   "command": "eval",
   "result": {
     "is_correct": true,
-    "feedback": "Your answer is correct!",
-    "error": null
+    "feedback": "Your answer is correct!"
   }
 }
 ```
@@ -115,7 +123,7 @@ curl --location 'http://localhost:8080/wolframEvaluationFunction' \
 	"answer":"Sin[p x + q]",
 	"response":"Sin[a x + b]",
 	"params":{
-		"comparisonType":"structure",
+		"type":"structure",
 		"named_variables":"{x}",
 		"correct_response_feedback":"Your answer is correct!",
 		"incorrect_response_feedback":"Your answer is incorrect!"
