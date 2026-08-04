@@ -1,1 +1,5 @@
 mathpass
+
+# Local, non-Docker dev checkout of toolkit-wolfram -- see
+# scripts/setup-toolkit.sh and .toolkit-wolfram-version.
+/toolkit-wolfram/
