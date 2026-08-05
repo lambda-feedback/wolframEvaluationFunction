@@ -18,7 +18,8 @@
 (* Declare package context *)
 BeginPackage["evaluate`"];
 
-EvaluationFunction[type_, answer_, response_, params_] := Module[{result, feedback},
+EvaluationFunction[answer_, response_, params_] := Module[{result, feedback, type},
+  type = params["type"];
   Print["Running Evaluation Function"];
   result = evalQ[type, answer, response, params];
   feedback = If[result["is_correct"],
@@ -35,7 +36,7 @@ EvaluationFunction[type_, answer_, response_, params_] := Module[{result, feedba
 
 Begin["`Private`"];
 
-equalQNumeric[answer_, response_, params_] := Module[{tolerance},
+equalQNumeric[answer_, response_, params_] := Module[{tolerance, error},
   Print["Evaluating Equal Numeric"];
   tolerance = If[Lookup[params, "tolerance_is_absolute", False],
     Lookup[params, "tolerance", 0],
@@ -43,7 +44,7 @@ equalQNumeric[answer_, response_, params_] := Module[{tolerance},
   ];
   error = Abs[answer - response];
   <|
-    "error" -> error,
+    "error" -> Null,
     "is_correct" -> TrueQ[error <= tolerance]
   |>
 ]

@@ -10,12 +10,24 @@ This repository contains an implementation of a Wolfram evaluation function that
 
 You can choose between running the Wolfram evaluation function itself, ore using Shimmy to run the function.
 
+This repository's JSON comms (reading the request, dispatching `eval`/`preview`, writing the response) come from the shared [`toolkit-wolfram`](https://github.com/lambda-feedback/toolkit-wolfram) paclet (`LambdaFeedback/EvaluationFunctionToolkit`) rather than being implemented in this repo — `evaluate.m`/`preview.m` here just provide `EvaluationFunction`/`PreviewFunction`, and the toolkit's `Bootstrap.wl` wires everything together (it's what the Docker image's Shimmy setup runs). To run locally, fetch the pinned toolkit version (see `.toolkit-wolfram-version`) with:
+
+```bash
+scripts/setup-toolkit.sh
+```
+
+This clones it into `./toolkit-wolfram` (gitignored; re-run any time to reset it). Then point `LF_TOOLKIT_PATH` at it:
+
+```bash
+export LF_TOOLKIT_PATH=./toolkit-wolfram
+```
+
 **Local**
 
 Use the following command to run the evaluation function directly:
 
 ```bash
-wolframscript -f evaluation_function.wl request.json response.json
+wolframscript -f ./toolkit-wolfram/Bootstrap.wl request.json response.json
 ```
 
 This will run the evaluation function using the input data from `request.json` and write the output to `response.json`.
@@ -23,12 +35,12 @@ An example `request.json` is:
 
 ```
 {
-  "method": "eval",
+  "command": "eval",
   "params": {
     "answer":"Sin[p x + q]",
 	"response":"Sin[a x + b]",
 	"params":{
-		"comparisonType":"structure",
+		"type":"structure",
 		"named_variables":"{x}",
 		"correct_response_feedback":"Your answer is correct!",
 		"incorrect_response_feedback":"Your answer is incorrect!"
@@ -44,8 +56,7 @@ Which gives the response:
   "command": "eval",
   "result": {
     "is_correct": true,
-    "feedback": "Your answer is correct!",
-    "error": null
+    "feedback": "Your answer is correct!"
   }
 }
 ```
@@ -63,19 +74,20 @@ Which gives the response:
     build.yml          # builds the public evaluation function image
     deploy.yml         # deploys the evaluation function to Lambda Feedback
 
-evaluation_function.wl # evaluation function source code
+evaluate.m              # EvaluationFunction source code
+preview.m               # PreviewFunction source code
 
-config.json            # evaluation function deployment configuration file
+config.json             # evaluation function deployment configuration file
 ```
 
 ### Development Workflow
 
-In its most basic form, the development workflow consists of writing the evaluation function in the `evaluation_function.wl` file and testing it locally. As long as the evaluation function adheres to the Evaluation Function API, a development workflow which incorporates using Shimmy is not necessary.
+In its most basic form, the development workflow consists of writing the evaluation function in `evaluate.m`/`preview.m` and testing it locally. As long as the evaluation function adheres to the Evaluation Function API, a development workflow which incorporates using Shimmy is not necessary.
 
-Testing the evaluation function can be done by running the script using the Wolfram Engine / WolframScript like so:
+Testing the evaluation function can be done by running the script using the Wolfram Engine / WolframScript like so (see [Run the Script](#run-the-script) above for the one-time `scripts/setup-toolkit.sh`/`LF_TOOLKIT_PATH` setup this depends on):
 
 ```bash
-wolframscript -f evaluation_function.wl request.json response.json
+wolframscript -f ./toolkit-wolfram/Bootstrap.wl request.json response.json
 ```
 
 > [!NOTE]
@@ -115,7 +127,7 @@ curl --location 'http://localhost:8080/wolframEvaluationFunction' \
 	"answer":"Sin[p x + q]",
 	"response":"Sin[a x + b]",
 	"params":{
-		"comparisonType":"structure",
+		"type":"structure",
 		"named_variables":"{x}",
 		"correct_response_feedback":"Your answer is correct!",
 		"incorrect_response_feedback":"Your answer is incorrect!"
