@@ -18,7 +18,7 @@
 (* Declare package context *)
 BeginPackage["preview`"];
 
-PreviewFunction[response_] := Module[{latexString, wolframString, parsedResponse},
+PreviewFunction[response_, params_] := Module[{latexString, wolframString, parsedResponse},
   Print["Running Preview Function"];
   Print["Preview Input:", response];
 
