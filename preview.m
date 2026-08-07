@@ -86,7 +86,7 @@ SafeToExpression[str_String] :=
             Get, Put, Install, Uninstall
           ]],
         "Error: Expression contains unsafe constructs",
-        expr  (* safe expression *)
+        expr /. s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg (* safe expression *)
       ],
       "Error: Unexpected parsing result"
     ]

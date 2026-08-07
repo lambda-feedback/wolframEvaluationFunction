@@ -167,11 +167,12 @@ StructureMatchQ[answerTemplate_String,response_String,namedVariables_List] :=
 		answerTemplate2=ReplaceAll[ToExpression[answerTemplate],inertFunctionRules];
 		MatchQ[response2,Patternize[answerTemplate2,namedVariables]]]
 
-equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ},
+equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr},
   Print["Evaluating Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
+	expr = ToExpression[StandardizeString[answer],TraditionalForm] /.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
 	correctQ = StructureMatchQ[
-		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
+		ToString[expr,InputForm],
 		response,
 		namedVariables];
 
@@ -218,10 +219,11 @@ SemanticMatchQ[answer_String,response_String] :=
 SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] :=
 	TrueQ[SemanticMatchQ[answer,response]&&StructureMatchQ[answerTemplate,response,namedVariables]]
 
-equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ},
-  Print["Evaluating Semantic"];
+equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ, expr},
+  Print["Evaluating Semantic"];    
+	expr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
 	correctQ = SemanticMatchQ[
-		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],		
+		ToString[expr,InputForm],		
 		response];
 		
 	<|
@@ -230,14 +232,16 @@ equalQSemantic[answer_String, response_String, params_Association] := Module[{co
     |>
 ]
 
-equalQSemanticAndStructure[answer_String, response_String, params_Association] := Module[{namedVariables,answerTemplate,correctQ},
+equalQSemanticAndStructure[answer_String, response_String, params_Association] := Module[{
+   namedVariables,answerTemplate,correctQ,answerExpr},
   Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
     answerTemplate = Lookup[params,"answer_template",{}];
+    answerExpr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;;
 	correctQ = SemanticAndStructureMatchQ[
-		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
+		ToString[answerExpr,InputForm],
 		response,
-		ToString[ToExpression[StandardizeString[answerTemplate],TraditionalForm],InputForm],
+		answerTemplate,
 		namedVariables
 		];
 
@@ -272,11 +276,12 @@ StrictStructureMatchQ[answerTemplate_String,response_String,namedVariables_List]
 SemanticAndStrictStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] := 
 	TrueQ[SemanticMatchQ[answer,response]&&StrictStructureMatchQ[answerTemplate,response,namedVariables]]
 	
-equalQStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ},
+equalQStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr},
   Print["Evaluating Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
+	expr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
 	correctQ = StrictStructureMatchQ[
-		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
+		ToString[expr,InputForm],
 		response,
 		namedVariables];
 
@@ -286,12 +291,14 @@ equalQStrictStructure[answer_String, response_String, params_Association] := Mod
     |>
 ]
 
-equalQSemanticAndStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,answerTemplate,correctQ},
+equalQSemanticAndStrictStructure[answer_String, response_String, params_Association] := Module[{
+    namedVariables,answerTemplate,correctQ,expr},
   Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
     answerTemplate = Lookup[params,"answer_template",{}];
+	expr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
 	correctQ = SemanticAndStrictStructureMatchQ[
-		ToString[ToExpression[StandardizeString[answer],TraditionalForm],InputForm],
+		ToString[expr,InputForm],
 		response,
 		answerTemplate,
 		namedVariables
