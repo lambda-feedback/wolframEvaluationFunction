@@ -18,13 +18,11 @@
 (* Declare package context *)
 BeginPackage["preview`"];
 
-PreviewFunction[response_, params_] := Module[{latexString, wolframString, parsedResponse},
+PreviewFunction[response_, params_] := Module[{latexString, wolframString, parsedResponse, isLatex},
   Print["Running Preview Function"];
   Print["Preview Input:", response];
 
-
-
-  isLatex = Lookup[params,"is_latex",{}]];
+  isLatex = Lookup[params,"is_latex",False];
 
   parsedResponse = SafeToExpression[response, isLatex];
 
@@ -84,7 +82,11 @@ SafeToExpression[str_String, isLatex_] :=
       ]
     ];
 
-
+    (* ToExpression can return $Failed without raising a message (e.g. malformed LaTeX),
+       which Check would not catch, so check explicitly here *)
+    If[!FreeQ[result, $Failed],
+      Return["Error: Failed to parse expression"]
+    ];
 
     (* If parsing succeeded, check the parsed structure *)
     If[MatchQ[result, Hold[_]],
