@@ -204,7 +204,9 @@ SemanticMatchQ[answer_,response_] := TrueQ[Simplify[(response-answer)/.activeFun
 
 SemanticMatchQ[answer_Equal, response_Equal] := 
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]]]||
-	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]]]
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]]]||
+	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])]],1]||
+	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])]],1]
 
 SemanticMatchQ[answer_Equal, response_] := False
 
