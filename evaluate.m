@@ -122,6 +122,32 @@ StandardizeString[str_String]:=StringReplace[
     FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
     "**"->"^"]
 
+StandardizeString[str_String]:=StringReplace[
+    FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
+    "**"->"^"]
+
+(*StandardizeExpression: a function that performs a number of standard replacements
+at the Expression stage, namely:
+- replacing s_[arg_Plus] by s*(arg) unless s is a symbol representing a known function
+- replacing expressions of the form dy_^n_/dx_^n_ with y'[x]^n
+- if the option SuppressIndependentVariable is set to True, replacing each y'[x] with y'*)
+
+Options[StandardizeExpression] = {SuppressIndependentVariable -> True};
+
+StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
+	suppress = OptionValue[SuppressIndependentVariable];
+	output = expr/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+	output = output/.{
+		dx_^a_. dy_^b_.:>
+			(ToExpression[StringTake[ToString[dx],{2}]]'[StringTake[ToString[dy],{2}]])^a/;
+				StringTake[ToString[dx],{1}]=="d"&&StringTake[ToString[dy],{1}]=="d"&&a>0&&a+b==0,
+		dx_^a_. dy_^b_.:>
+			(ToExpression[StringTake[ToString[dy],{2}]]'[StringTake[ToString[dx],{2}]])^a/;
+				StringTake[ToString[dx],{1}]=="d"&&StringTake[ToString[dy],{1}]=="d"&&b>0&&a+b==0};
+	If[suppress,output=output/.Derivative[n_][y_][x_]:>Derivative[n][y]];
+	output
+]
+
 (*StructureMatchQ: a function that checks whether a user's response \
 has the same structure as a given answer template, given a set of \
 named variables.*)
@@ -167,10 +193,11 @@ StructureMatchQ[answerTemplate_String,response_String,namedVariables_List] :=
 		answerTemplate2=ReplaceAll[ToExpression[answerTemplate],inertFunctionRules];
 		MatchQ[response2,Patternize[answerTemplate2,namedVariables]]]
 
-equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr},
+equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr,suppress},
   Print["Evaluating Structure"];
+    suppress = Lookup[params,"suppress_independent_variable",True];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
-	expr = ToExpression[StandardizeString[answer],TraditionalForm] /.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
 	correctQ = StructureMatchQ[
 		ToString[expr,InputForm],
 		response,
@@ -221,9 +248,10 @@ SemanticMatchQ[answer_String,response_String] :=
 SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] :=
 	TrueQ[SemanticMatchQ[answer,response]&&StructureMatchQ[answerTemplate,response,namedVariables]]
 
-equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ, expr},
+equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ, expr,suppress},
   Print["Evaluating Semantic"];    
-	expr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+    suppress = Lookup[params,"suppress_independent_variable",True];
+	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
 	correctQ = SemanticMatchQ[
 		ToString[expr,InputForm],		
 		response];
@@ -235,11 +263,12 @@ equalQSemantic[answer_String, response_String, params_Association] := Module[{co
 ]
 
 equalQSemanticAndStructure[answer_String, response_String, params_Association] := Module[{
-   namedVariables,answerTemplate,correctQ,answerExpr},
+   namedVariables,answerTemplate,correctQ,answerExpr,suppress},
   Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
-    answerTemplate = Lookup[params,"answer_template",{}];
-    answerExpr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;;
+    answerTemplate = Lookup[params,"answer_template",{}];    
+    suppress = Lookup[params,"suppress_independent_variable",True];
+	answerExpr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
 	correctQ = SemanticAndStructureMatchQ[
 		ToString[answerExpr,InputForm],
 		response,
@@ -278,10 +307,11 @@ StrictStructureMatchQ[answerTemplate_String,response_String,namedVariables_List]
 SemanticAndStrictStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] := 
 	TrueQ[SemanticMatchQ[answer,response]&&StrictStructureMatchQ[answerTemplate,response,namedVariables]]
 	
-equalQStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr},
+equalQStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr,suppress},
   Print["Evaluating Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
-	expr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+    suppress = Lookup[params,"suppress_independent_variable",True];
+	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
 	correctQ = StrictStructureMatchQ[
 		ToString[expr,InputForm],
 		response,
@@ -294,11 +324,12 @@ equalQStrictStructure[answer_String, response_String, params_Association] := Mod
 ]
 
 equalQSemanticAndStrictStructure[answer_String, response_String, params_Association] := Module[{
-    namedVariables,answerTemplate,correctQ,expr},
+    namedVariables,answerTemplate,correctQ,expr,suppress},
   Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
     answerTemplate = Lookup[params,"answer_template",{}];
-	expr = ToExpression[StandardizeString[answer],TraditionalForm]/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+    suppress = Lookup[params,"suppress_independent_variable",True];
+	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
 	correctQ = SemanticAndStrictStructureMatchQ[
 		ToString[expr,InputForm],
 		response,

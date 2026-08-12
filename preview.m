@@ -18,13 +18,13 @@
 (* Declare package context *)
 BeginPackage["preview`"];
 
-PreviewFunction[response_, params_] := Module[{latexString, wolframString, parsedResponse, isLatex},
-  Print["Running Preview Function"];
-  Print["Preview Input:", response];
+PreviewFunction[response_, params_] := Module[{latexString, wolframString, parsedResponse, isLatex,suppress},Print["Running Preview Function"];
+Print["Preview Input:", response];
 
-  isLatex = Lookup[params,"is_latex",False];
+isLatex = Lookup[params,"is_latex",False];
+suppress=Lookup[params,"suppress_independent_variable",True];
 
-  parsedResponse = SafeToExpression[response, isLatex];
+  parsedResponse = SafeToExpression[response, isLatex,suppress];
 
    If[StringQ[parsedResponse] && StringStartsQ[parsedResponse, "Error:"],
     Return[
@@ -61,7 +61,7 @@ activeFunctionRules = {
 
 Begin["`Private`"];
 
-SafeToExpression[str_String, isLatex_] :=
+SafeToExpression[str_String, isLatex_,suppress_] :=
   Module[{expr, result},
     (* First check for obviously dangerous patterns in the raw string *)
     If[StringContainsQ[str,
@@ -101,7 +101,7 @@ SafeToExpression[str_String, isLatex_] :=
             Get, Put, Install, Uninstall
           ]],
         "Error: Expression contains unsafe constructs",
-        expr /. s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg (* safe expression *)
+       StandardizeExpression[expr,SuppressIndependentVariable->suppress](* safe expression *)
       ],
       "Error: Unexpected parsing result"
     ]
@@ -114,6 +114,28 @@ would parse as an assignment gets parsed instead as an equation*)
 StandardizeString[str_String]:=StringReplace[
     FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
     "**"->"^"]
+
+(*StandardizeExpression: a function that performs a number of standard replacements
+at the Expression stage, namely:
+- replacing s_[arg_Plus] by s*(arg) unless s is a symbol representing a known function
+- replacing expressions of the form dy_^n_/dx_^n_ with y'[x]^n
+- if the option SuppressIndependentVariable is set to True, replacing each y'[x] with y'*)
+
+Options[StandardizeExpression] = {SuppressIndependentVariable -> True};
+
+StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
+	suppress = OptionValue[SuppressIndependentVariable];
+	output = expr/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+	output = output/.{
+		dx_^a_. dy_^b_.:>
+			(ToExpression[StringTake[ToString[dx],{2}]]'[StringTake[ToString[dy],{2}]])^a/;
+				StringTake[ToString[dx],{1}]=="d"&&StringTake[ToString[dy],{1}]=="d"&&a>0&&a+b==0,
+		dx_^a_. dy_^b_.:>
+			(ToExpression[StringTake[ToString[dy],{2}]]'[StringTake[ToString[dx],{2}]])^a/;
+				StringTake[ToString[dx],{1}]=="d"&&StringTake[ToString[dy],{1}]=="d"&&b>0&&a+b==0};
+	If[suppress,output=output/.Derivative[n_][y_][x_]:>Derivative[n][y]];
+	output
+]
 
 
 
