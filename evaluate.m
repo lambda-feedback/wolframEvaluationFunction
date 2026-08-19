@@ -118,13 +118,12 @@ of the equals sign in a string to the repeated equals sign, so that anything WL
 would parse as an assignment gets parsed instead as an equation, and also carries out
 other standard string replacements*)
 
-StandardizeString[str_String]:=StringReplace[
-    FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
-    "**"->"^"]
+Options[StandardizeString] = {PlusMinusSplit->True};
 
-StandardizeString[str_String]:=StringReplace[
+StandardizeString[str_String,OptionsPattern[]]:=Module[{output},output=StringReplace[
     FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
-    "**"->"^"]
+    {"**"->"^","plus_minus"->"\[PlusMinus]","minus_plus"->"\[MinusPlus]"}];
+If[OptionValue[PlusMinusSplit]&&StringContainsQ[output,{"\[PlusMinus]","\[MinusPlus]"}],output="{"<>StringReplace[output,{"\[PlusMinus]"->"+","\[MinusPlus]"->"-"}]<>", "<>StringReplace[output,{"\[PlusMinus]"->"-","\[MinusPlus]"->"+"}]<>"}"];output]
 
 (*StandardizeExpression: a function that performs a number of standard replacements
 at the Expression stage, namely:
@@ -147,6 +146,16 @@ StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
 	If[suppress,output=output/.Derivative[n_][y_][x_]:>Derivative[n][y]];
 	output
 ]
+
+(* FullStandardizeString *)
+
+Options[FullStandardizeString] = {SuppressIndependentVariable -> True};
+
+FullStandardizeString[str_,OptionsPattern[]] := Module[{output,suppress},
+	output=StandardizeString[str,PlusMinusSplit->True];
+	output = ToExpression[output,TraditionalForm];
+	output=StandardizeExpression[output,SuppressIndependentVariable->OptionValue[SuppressIndependentVariable]];
+	ToString[output,InputForm]]
 
 (*StructureMatchQ: a function that checks whether a user's response \
 has the same structure as a given answer template, given a set of \
@@ -187,21 +196,35 @@ CanonicComplex[arg_]:=arg
    
 Options[StructureMatchQ] = {Atomic -> False};
 
-StructureMatchQ[answerTemplate_String,response_String,namedVariables_List] := 
+StructureMatchQ[answerTemplate_String,response_String,namedVariables_List,multipleAnswersInterpretation_String] := 
 	Module[{response2,answerTemplate2},
 	    response2=MapAll[CanonicComplex,ReplaceAll[ToExpression[response],inertFunctionRules]];
 		answerTemplate2=ReplaceAll[ToExpression[answerTemplate],inertFunctionRules];
-		MatchQ[response2,Patternize[answerTemplate2,namedVariables]]]
+		StructureMatchQ[answerTemplate2,response2,namedVariables,multipleAnswersInterpretation]]
 
-equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr,suppress},
+StructureMatchQ[answerTemplate_,response_,namedVariables_List,multipleAnswersInterpretation_String] := 
+	MatchQ[response,Patternize[answerTemplate,namedVariables]]
+
+StructureMatchQ[answerTemplate_List,response_List,namedVariables_List,"match_all"]:=Apply[And,Apply[Or,Apply[StructureMatchQ[#1,#2,namedVariables,"match_all"]&,Outer[List,answerTemplate,response],{2}],{1}]]
+
+StructureMatchQ[answerTemplate_List,response_,namedVariables_List,"match_all"]:=False
+
+StructureMatchQ[answerTemplate_List,response_List,namedVariables_List,"match_any"]:=Apply[And,Apply[Or,Apply[StructureMatchQ[#1,#2,namedVariables,"match_all"]&,Outer[List,answerTemplate,response],{2}],{1}]]
+
+StructureMatchQ[answerTemplate_List,response_,namedVariables_List,"match_any"]:=Apply[Or,Map[StructureMatchQ[#1,response,namedVariables,"match_any"]&,answerTemplate]]
+
+StructureMatchQ[answerTemplate_List,response_List,namedVariables_List,"match_order"]:=Apply[And,Apply[Or,Apply[StructureMatchQ[#1,#2,namedVariables,"match_all"]&,Outer[List,answerTemplate,response],{2}],{1}]]
+
+StructureMatchQ[answerTemplate_List,response_,namedVariables_List,"match_order"]:=Apply[And,Apply[StructureMatchQ[#1,#2,namedVariables,"match_order"]&,Transpose[{answerTemplate,response}],{1}]]
+
+equalQStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,standardizedAnswer,standardizedResponse,suppress,multipleAnswersInterpretation},
   Print["Evaluating Structure"];
     suppress = Lookup[params,"suppress_independent_variable",True];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
-	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
-	correctQ = StructureMatchQ[
-		ToString[expr,InputForm],
-		response,
-		namedVariables];
+	standardizedAnswer = FullStandardizeString[answer,SuppressIndependentVariable->suppress];
+	standardizedResponse= FullStandardizeString[response,SuppressIndependentVariable->suppress];
+    multipleAnswersInterpretation=Lookup[params,"multiple_answers_interpretation","match_all"];
+	correctQ = StructureMatchQ[standardizedAnswer,standardizedResponse,namedVariables,multipleAnswersInterpretation];
 
 	<|
 		"error" -> Null,
@@ -226,35 +249,48 @@ activeFunctionRules = {
 	exp -> Exp, log -> Log, ln -> Log, sqrt -> Sqrt,
 	pi -> Pi, e -> E, i -> I};
 
-SemanticMatchQ[answer_,response_] := TrueQ[Simplify[(response-answer)/.activeFunctionRules] == 0] || 
+SemanticMatchQ[answer_,response_,multipleAnswersInterpretation_String] := TrueQ[Simplify[(response-answer)/.activeFunctionRules] == 0] || 
     TrueQ[FullSimplify[(response-answer)/.activeFunctionRules] == 0]
 
-SemanticMatchQ[answer_Equal, response_Equal] := 
-	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]]]||
-	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]]]||
-	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])]],1]||
-	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])]],1]
+SemanticMatchQ[answer_List,response_List,"match_all"]:=Apply[And,Apply[Or,Apply[SemanticMatchQ[#1,#2,"match_all"]&,Outer[List,answer,response],{2}],{1}]];
 
-SemanticMatchQ[answer_Equal, response_] := False
+SemanticMatchQ[answer_List,response_,"match_all"]:=False;
 
-SemanticMatchQ[answer_, response_Equal] := False
+SemanticMatchQ[answer_List,response_List,"match_any"]:=Apply[And,Apply[Or,Apply[SemanticMatchQ[#1,#2,"match_any"]&,Outer[List,answer,response],{2}],{1}]];
 
-SemanticMatchQ[answer_String,response_String] := 
+SemanticMatchQ[answer_List,response_,"match_any"]:=Apply[Or,Map[SemanticMatchQ[#1,response,"match_any"]&,answer]];
+
+SemanticMatchQ[answer_List,response_List,"match_order"]:=Apply[And,Apply[SemanticMatchQ[#1,#2,"match_order"]&,Transpose[{answer,response}],{1}]];
+
+SemanticMatchQ[answer_List,response_,"match_order"]:=False;
+
+SemanticMatchQ[answer_Equal, response_Equal,multipleAnswersInterpretation_String] := 
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]],multipleAnswersInterpretation]||
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]],multipleAnswersInterpretation]||
+	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])]],1,multipleAnswersInterpretation]||
+	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])]],1,multipleAnswersInterpretation]
+
+SemanticMatchQ[answer_Equal, response_,multipleAnswersInterpretation_String] := False
+
+SemanticMatchQ[answer_, response_Equal,multipleAnswersInterpretation_String] := False
+
+SemanticMatchQ[answer_String,response_String,multipleAnswersInterpretation_String] := 
   SemanticMatchQ[
     ToExpression[answer],
-    ToExpression[response]
+    ToExpression[response],
+multipleAnswersInterpretation
   ]
 
-SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] :=
-	TrueQ[SemanticMatchQ[answer,response]&&StructureMatchQ[answerTemplate,response,namedVariables]]
+SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List,multipleAnswersInterpretation_String] :=
+	TrueQ[SemanticMatchQ[answer,response,multipleAnswersInterpretation]&&StructureMatchQ[answerTemplate,response,namedVariables,multipleAnswersInterpretation]]
 
-equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ, expr,suppress},
+equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ, standardizedAnswer,standardizedResponse,suppress,multipleAnswersInterpretation},
   Print["Evaluating Semantic"];    
     suppress = Lookup[params,"suppress_independent_variable",True];
-	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
-	correctQ = SemanticMatchQ[
-		ToString[expr,InputForm],		
-		response];
+	standardizedAnswer = FullStandardizeString[answer,SuppressIndependentVariable->suppress];
+	standardizedResponse = FullStandardizeString[response,SuppressIndependentVariable->suppress];
+	multipleAnswersInterpretation=Lookup[params,"multiple_answers_interpretation","match_all"];
+	correctQ = SemanticMatchQ[standardizedAnswer,standardizedResponse,multipleAnswersInterpretation];
 		
 	<|
 		"error" -> Null,
@@ -263,18 +299,18 @@ equalQSemantic[answer_String, response_String, params_Association] := Module[{co
 ]
 
 equalQSemanticAndStructure[answer_String, response_String, params_Association] := Module[{
-   namedVariables,answerTemplate,correctQ,answerExpr,suppress},
+   namedVariables,standardizedAnswer,standardizedResponse,answerTemplate,standardizedAnswerTemplate,correctQ,suppress,multipleAnswersInterpretation},
   Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
-    answerTemplate = Lookup[params,"answer_template",{}];    
+    answerTemplate = Lookup[params,"answer_template",Automatic]; 
     suppress = Lookup[params,"suppress_independent_variable",True];
-	answerExpr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
-	correctQ = SemanticAndStructureMatchQ[
-		ToString[answerExpr,InputForm],
-		response,
-		answerTemplate,
-		namedVariables
-		];
+	standardizedAnswer= FullStandardizeString[answer,SuppressIndependentVariable->suppress];
+	standardizedResponse= FullStandardizeString[response,SuppressIndependentVariable->suppress];
+	multipleAnswersInterpretation=Lookup[params,"multiple_answers_interpretation","match_all"];
+	standardizedAnswerTemplate=If[TrueQ[answerTemplate==Automatic],
+		standardizedAnswer,
+		FullStandardizeString[answerTemplate,SuppressIndependentVariable->suppress]];
+	correctQ = SemanticAndStructureMatchQ[standardizedAnswer,standardizedResponse,standardizedAnswerTemplate,namedVariables,multipleAnswersInterpretation];
 
 	<|
 		"error" -> Null,
@@ -295,8 +331,8 @@ UnnamedSymbols[expression_,namedVariables_] :=
 
 (* IN PARTICULAR, THE COMPARISON OF THE LENGTHS OF THE SYMBOL LISTS IS VERY HAMFISTED *)
 
-StrictStructureMatchQ[answerTemplate_String,response_String,namedVariables_List] := 
-	StructureMatchQ[answerTemplate,response,namedVariables]&&
+StrictStructureMatchQ[answerTemplate_String,response_String,namedVariables_List,multipleAnswersInterpretation_String] := 
+	StructureMatchQ[answerTemplate,response,namedVariables,multipleAnswersInterpretation]&&
 	TrueQ[
 		(Length[Union[UnnamedSymbols[ToExpression[response],namedVariables]]]==
 		 Length[Union[UnnamedSymbols[ToExpression[StandardizeString[answerTemplate],TraditionalForm],namedVariables]]])]
@@ -304,18 +340,17 @@ StrictStructureMatchQ[answerTemplate_String,response_String,namedVariables_List]
 (* SemanticAndStrictStructureMatchQ: a function that combines a strict structure comparison with a test of
 	mathematical equivalence  *)
 
-SemanticAndStrictStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List] := 
-	TrueQ[SemanticMatchQ[answer,response]&&StrictStructureMatchQ[answerTemplate,response,namedVariables]]
+SemanticAndStrictStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List,multipleAnswersInterpretation_String] := 
+	TrueQ[SemanticMatchQ[answer,response,multipleAnswersInterpretation]&&StrictStructureMatchQ[answerTemplate,response,namedVariables,multipleAnswersInterpretation]]
 	
-equalQStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,expr,suppress},
-  Print["Evaluating Structure"];
+equalQStrictStructure[answer_String, response_String, params_Association] := Module[{namedVariables,correctQ,suppress,standardizedAnswer,standardizedResponse,multipleAnswersInterpretation},
+  Print["Evaluating Strict Structure"];
 	namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];
     suppress = Lookup[params,"suppress_independent_variable",True];
-	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
-	correctQ = StrictStructureMatchQ[
-		ToString[expr,InputForm],
-		response,
-		namedVariables];
+	standardizedAnswer = FullStandardizeString[answer,SuppressIndependentVariable->suppress];
+	standardizedResponse= FullStandardizeString[response,SuppressIndependentVariable->suppress];
+	multipleAnswersInterpretation=Lookup[params,"multiple_answers_interpretation","match_all"];
+	correctQ = StrictStructureMatchQ[standardizedAnswer,standardizedResponse,namedVariables,multipleAnswersInterpretation];
 
 	<|
 		"error" -> Null,
@@ -324,18 +359,18 @@ equalQStrictStructure[answer_String, response_String, params_Association] := Mod
 ]
 
 equalQSemanticAndStrictStructure[answer_String, response_String, params_Association] := Module[{
-    namedVariables,answerTemplate,correctQ,expr,suppress},
-  Print["Evaluating SemanticAndStructure"];
+    namedVariables,answerTemplate,correctQ,suppress,standardizedAnswer,standardizedResponse,standardizedAnswerTemplate,multipleAnswersInterpretation},
+  Print["Evaluating SemanticAndStrictStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
-    answerTemplate = Lookup[params,"answer_template",{}];
+    answerTemplate = Lookup[params,"answer_template",Automatic]; 
     suppress = Lookup[params,"suppress_independent_variable",True];
-	expr = StandardizeExpression[ToExpression[StandardizeString[answer],TraditionalForm],SuppressIndependentVariable->suppress];
-	correctQ = SemanticAndStrictStructureMatchQ[
-		ToString[expr,InputForm],
-		response,
-		answerTemplate,
-		namedVariables
-		];
+	standardizedAnswer= FullStandardizeString[answer,SuppressIndependentVariable->suppress];
+	standardizedResponse= FullStandardizeString[response,SuppressIndependentVariable->suppress];
+	standardizedAnswerTemplate=If[TrueQ[answerTemplate==Automatic],
+		standardizedAnswer,
+		FullStandardizeString[answerTemplate,SuppressIndependentVariable->suppress]];
+	multipleAnswersInterpretation=Lookup[params,"multiple_answers_interpretation","match_all"];
+	correctQ = SemanticAndStrictStructureMatchQ[standardizedAnswer,standardizedAnswer,standardizedAnswerTemplate,namedVariables,multipleAnswersInterpretation];
 
 	<|
 		"error" -> Null,

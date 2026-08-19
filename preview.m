@@ -18,13 +18,16 @@
 (* Declare package context *)
 BeginPackage["preview`"];
 
-PreviewFunction[response_, params_] := Module[{latexString, wolframString, parsedResponse, isLatex,suppress},Print["Running Preview Function"];
-Print["Preview Input:", response];
-
-isLatex = Lookup[params,"is_latex",False];
-suppress=Lookup[params,"suppress_independent_variable",True];
-
-  parsedResponse = SafeToExpression[response, isLatex,suppress];
+PreviewFunction[response_, params_] := Module[{
+	latexString, wolframString, parsedResponse, isLatex,suppress,plusMinusSplit},
+	Print["Running Preview Function"];
+	Print["Preview Input:", response];
+	
+	isLatex = Lookup[params,"is_latex",False];
+	suppress=Lookup[params,"suppress_independent_variable",True];
+	plusMinusSplit = Lookup[params,"plus_minus_split_preview",True];
+	
+	parsedResponse = SafeToExpression[response, isLatex,suppress,plusMinusSplit];
 
    If[StringQ[parsedResponse] && StringStartsQ[parsedResponse, "Error:"],
     Return[
@@ -61,7 +64,7 @@ activeFunctionRules = {
 
 Begin["`Private`"];
 
-SafeToExpression[str_String, isLatex_,suppress_] :=
+SafeToExpression[str_String, isLatex_,suppress_,plusMinusSplit_] :=
   Module[{expr, result},
     (* First check for obviously dangerous patterns in the raw string *)
     If[StringContainsQ[str,
@@ -73,11 +76,11 @@ SafeToExpression[str_String, isLatex_,suppress_] :=
 
     If[isLatex,
       result = Quiet @ Check[
-      ToExpression[StandardizeString[str], TeXForm, Hold],
+      ToExpression[StandardizeString[str,PlusMinusSplit->plusMinusSplit], TeXForm, Hold],
       Return["Error: Failed to parse expression"]
       ],
       result = Quiet @ Check[
-      ToExpression[StandardizeString[str], TraditionalForm, Hold],
+      ToExpression[StandardizeString[str,PlusMinusSplit->plusMinusSplit], TraditionalForm, Hold],
       Return["Error: Failed to parse expression"]
       ]
     ];
@@ -111,9 +114,15 @@ SafeToExpression[str_String, isLatex_,suppress_] :=
 of the equals sign in a string to the repeated equals sign, so that anything WL 
 would parse as an assignment gets parsed instead as an equation*)
 
-StandardizeString[str_String]:=StringReplace[
-    FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
-    "**"->"^"]
+Options[StandardizeString] = {PlusMinusSplit->True};
+
+StandardizeString[str_String,OptionsPattern[]]:=Module[{output},
+	output=StringReplace[
+		FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
+		{"**"->"^","plus_minus"->"\[PlusMinus]","minus_plus"->"\[MinusPlus]"}];
+	If[OptionValue[PlusMinusSplit]&&StringContainsQ[output,{"\[PlusMinus]","\[MinusPlus]"}],
+		output="{"<>StringReplace[output,{"\[PlusMinus]"->"+","\[MinusPlus]"->"-"}]<>", "<>StringReplace[output,{"\[PlusMinus]"->"-","\[MinusPlus]"->"+"}]<>"}"];
+	output]
 
 (*StandardizeExpression: a function that performs a number of standard replacements
 at the Expression stage, namely:
