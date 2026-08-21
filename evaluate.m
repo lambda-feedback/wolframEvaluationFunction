@@ -279,7 +279,7 @@ SemanticMatchQ[answer_String,response_String,multipleAnswersInterpretation_Strin
   SemanticMatchQ[
     ToExpression[answer],
     ToExpression[response],
-multipleAnswersInterpretation
+	multipleAnswersInterpretation
   ]
 
 SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List,multipleAnswersInterpretation_String] :=
@@ -367,10 +367,10 @@ equalQSemanticAndStrictStructure[answer_String, response_String, params_Associat
     suppress = Lookup[params,"suppress_independent_variable",True];
 	standardizedAnswer= FullStandardizeString[answer,SuppressIndependentVariable->suppress];
 	standardizedResponse= FullStandardizeString[response,SuppressIndependentVariable->suppress];
-	standardizedAnswerTemplate=If[TrueQ[answerTemplate==Automatic],
-		standardizedAnswer,
-		FullStandardizeString[answerTemplate,SuppressIndependentVariable->suppress]];
-	multipleAnswersInterpretation=Lookup[params,"multiple_answers_interpretation","match_all"];
+standardizedAnswerTemplate=If[TrueQ[answerTemplate==Automatic],
+standardizedAnswer,
+FullStandardizeString[answerTemplate,SuppressIndependentVariable->suppress]];
+multipleAnswersInterpretation=Lookup[params,"multiple_answers_interpretation","match_all"];
 	correctQ = SemanticAndStrictStructureMatchQ[standardizedAnswer,standardizedAnswer,standardizedAnswerTemplate,namedVariables,multipleAnswersInterpretation];
 
 	<|
