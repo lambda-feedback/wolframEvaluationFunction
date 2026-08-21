@@ -39,14 +39,16 @@ PreviewFunction[response_, params_] := Module[{
     ]
   ];
 
-    latexString = ToString[parsedResponse/.activeFunctionRules, TeXForm];
-    wolframString = ToString[parsedResponse/.activeFunctionRules, InputForm];
+    latexString = ToString[parsedResponse, TeXForm];
+    wolframString = ToString[parsedResponse, InputForm];
 
   <|
         "latex" -> latexString,
         "sympy" -> wolframString
     |>
 ];
+
+Begin["`Private`"];
 
 activeFunctionRules = {
 	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
@@ -61,8 +63,6 @@ activeFunctionRules = {
 	exp -> Exp, log -> Log, ln -> Log, 
 	sqrt ->Sqrt,
 	pi -> Pi, e -> E, i -> I};
-
-Begin["`Private`"];
 
 SafeToExpression[str_String, isLatex_,suppress_,plusMinusSplit_] :=
   Module[{expr, result},

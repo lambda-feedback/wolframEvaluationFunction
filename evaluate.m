@@ -36,6 +36,38 @@ EvaluationFunction[answer_, response_, params_] := Module[{result, feedback, typ
 
 Begin["`Private`"];
 
+activeFunctionRules = {
+	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
+	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
+	arcsec -> ArcSec, asec -> ArcSec, ArcCosec -> ArcCsc, arccsc -> ArcCsc, acsc -> ArcCsc, acosec -> ArcCsc,
+	arccot -> ArcCot,acot -> ArcCot, 
+	sinh -> Sinh, cosh -> Cosh, tanh -> Tanh, sech -> Sech, Cosech -> Csch, csch -> Csch, cosech -> Csch, coth -> Coth, 
+	arcsinh -> ArcSinh, asinh -> ArcSinh, arccosh -> ArcCosh, acosh -> ArcCosh, arctanh -> ArcTanh, atanh -> ArcTanh, 
+	arcsech -> ArcSech, asech -> ArcSech, 
+	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
+	arccoth -> ArcCoth, acoth -> ArcCoth,
+	exp -> Exp, log -> Log, ln -> Log, sqrt -> Sqrt,
+	pi -> Pi, e -> E, i -> I};
+
+inertFunctionRules = {
+   Sin -> fSin, sin -> fSin, Cos -> fCos,cos->fCos, Tan -> fTan, tan -> fTan,
+   Sec -> fSec, sec -> fSec, Csc -> fCsc, Cosec -> fCsc, csc -> fCsc, cosec -> fCsc, Cot -> fCot, cot -> fCot, 
+   ArcSin -> fArcSin, arcsin -> fArcSin, asin -> fArcSin, ArcCos -> fArcCos, arccos -> fArcCos, acos -> fArcCos, 
+   ArcTan -> fArcTan, arctan -> fArcTan, atan -> fArcTan, 
+   ArcSec -> fArcSec, arcsec -> fArcSec, asec -> fArcSec, 
+   ArcCsc -> fArcCsc, ArcCosec -> fArcCsc, arccsc -> fArcCsc, acsc -> fArcCsc, acosec -> fArcCsc, 
+   ArcCot -> fArcCot, arccot -> fArcCot, acot -> fArcCot, 
+   Sinh -> fSinh, sinh -> fSinh, Cosh -> fCosh, cosh -> fCosh, tanh -> fTanh, tanh->fTanh, 
+   Sech -> fSech, sech -> fSech, Csch -> fCsch, Cosech -> fCsch, csch -> fCsch, cosech -> fCsch, Coth -> fCoth, coth->fCoth,
+   ArcSinh -> fArcSinh, arcsinh -> fArcSinh, asinh -> fArcSinh, ArcCosh -> fArcCosh, arccosh -> fArcCosh, acosh -> fArcCosh, 
+   ArcTanh -> fArcTanh, arctanh -> fArcTanh, atanh -> fArcTanh, 
+   ArcSech -> fArcSech, arcsech -> fArcSech, asech -> fArcSech, 
+   ArcCsch -> fArcCsch, ArcCosech -> fArcCsch, arccsch -> fArcCsch, acsch -> fArcCsch, acosech -> fArcCsch, 
+   ArcCoth -> fArcCoth, arccoth -> fArcCoth, acoth->fArcCoth, 
+   Exp -> fExp, exp -> fExp, Log -> fLog, log -> fLog, ln -> fLog, 
+   Sqrt -> fSqrt, sqrt -> fSqrt,
+   pi -> Pi, e -> E, i -> I};
+
 equalQNumeric[answer_, response_, params_] := Module[{tolerance, error},
   Print["Evaluating Equal Numeric"];
   tolerance = If[Lookup[params, "tolerance_is_absolute", False],
@@ -162,25 +194,6 @@ FullStandardizeString[str_,OptionsPattern[]] := Module[{output,suppress},
 has the same structure as a given answer template, given a set of \
 named variables.*)
 
-inertFunctionRules = {
-   Sin -> fSin, sin -> fSin, Cos -> fCos,cos->fCos, Tan -> fTan, tan -> fTan,
-   Sec -> fSec, sec -> fSec, Csc -> fCsc, Cosec -> fCsc, csc -> fCsc, cosec -> fCsc, Cot -> fCot, cot -> fCot, 
-   ArcSin -> fArcSin, arcsin -> fArcSin, asin -> fArcSin, ArcCos -> fArcCos, arccos -> fArcCos, acos -> fArcCos, 
-   ArcTan -> fArcTan, arctan -> fArcTan, atan -> fArcTan, 
-   ArcSec -> fArcSec, arcsec -> fArcSec, asec -> fArcSec, 
-   ArcCsc -> fArcCsc, ArcCosec -> fArcCsc, arccsc -> fArcCsc, acsc -> fArcCsc, acosec -> fArcCsc, 
-   ArcCot -> fArcCot, arccot -> fArcCot, acot -> fArcCot, 
-   Sinh -> fSinh, sinh -> fSinh, Cosh -> fCosh, cosh -> fCosh, tanh -> fTanh, tanh->fTanh, 
-   Sech -> fSech, sech -> fSech, Csch -> fCsch, Cosech -> fCsch, csch -> fCsch, cosech -> fCsch, Coth -> fCoth, coth->fCoth,
-   ArcSinh -> fArcSinh, arcsinh -> fArcSinh, asinh -> fArcSinh, ArcCosh -> fArcCosh, arccosh -> fArcCosh, acosh -> fArcCosh, 
-   ArcTanh -> fArcTanh, arctanh -> fArcTanh, atanh -> fArcTanh, 
-   ArcSech -> fArcSech, arcsech -> fArcSech, asech -> fArcSech, 
-   ArcCsch -> fArcCsch, ArcCosech -> fArcCsch, arccsch -> fArcCsch, acsch -> fArcCsch, acosech -> fArcCsch, 
-   ArcCoth -> fArcCoth, arccoth -> fArcCoth, acoth->fArcCoth, 
-   Exp -> fExp, exp -> fExp, Log -> fLog, log -> fLog, ln -> fLog, 
-   Sqrt -> fSqrt, sqrt -> fSqrt,
-   pi -> Pi, e -> E, i -> I};
-
 ComplexSymbolize[a_Integer?Positive]:=Symbol["$sym"<>ToString[a]]
 
 ComplexSymbolize[a_Integer?Negative]:=Symbol["$symmin"<>ToString[-a]]
@@ -236,20 +249,7 @@ equalQStructure[answer_String, response_String, params_Association] := Module[{n
 (* SemanticAndStructureMatchQ: a function that checks whether a user's response both 
 	(a) is the same mathematical object as a given answer,and (b) has the same structure as a given answer template,
 	given a set of named variables. *)
-
-activeFunctionRules = {
-	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
-	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
-	arcsec -> ArcSec, asec -> ArcSec, ArcCosec -> ArcCsc, arccsc -> ArcCsc, acsc -> ArcCsc, acosec -> ArcCsc,
-	arccot -> ArcCot,acot -> ArcCot, 
-	sinh -> Sinh, cosh -> Cosh, tanh -> Tanh, sech -> Sech, Cosech -> Csch, csch -> Csch, cosech -> Csch, coth -> Coth, 
-	arcsinh -> ArcSinh, asinh -> ArcSinh, arccosh -> ArcCosh, acosh -> ArcCosh, arctanh -> ArcTanh, atanh -> ArcTanh, 
-	arcsech -> ArcSech, asech -> ArcSech, 
-	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
-	arccoth -> ArcCoth, acoth -> ArcCoth,
-	exp -> Exp, log -> Log, ln -> Log, sqrt -> Sqrt,
-	pi -> Pi, e -> E, i -> I};
-
+	
 SemanticMatchQ[answer_,response_,multipleAnswersInterpretation_String] := TrueQ[Simplify[(response-answer)/.activeFunctionRules] == 0] || 
     TrueQ[FullSimplify[(response-answer)/.activeFunctionRules] == 0]
 
