@@ -134,8 +134,9 @@ Options[StandardizeExpression] = {SuppressIndependentVariable -> True};
 
 StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
 	suppress = OptionValue[SuppressIndependentVariable];
-    output = expr/.activeFunctionRules;
-	output = output/.s_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+         output=expr/.activeFunctionRules;
+	output = output/.s:_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+	output = output/.I[arg_]:>I*arg;
 	output = output/.{
 		dx_^a_. dy_^b_.:>
 			(ToExpression[StringTake[ToString[dx],{2}]]'[StringTake[ToString[dy],{2}]])^a/;
