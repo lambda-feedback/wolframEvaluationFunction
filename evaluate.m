@@ -34,8 +34,6 @@ EvaluationFunction[answer_, response_, params_] := Module[{result, feedback, typ
   |>
 ];
 
-Begin["`Private`"];
-
 activeFunctionRules = {
 	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
 	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
@@ -48,6 +46,8 @@ activeFunctionRules = {
 	arccoth -> ArcCoth, acoth -> ArcCoth,
 	exp -> Exp, log -> Log, ln -> Log, sqrt -> Sqrt,
 	pi -> Pi, e -> E, i -> I};
+
+Begin["`Private`"];
 
 inertFunctionRules = {
    Sin -> fSin, sin -> fSin, Cos -> fCos,cos->fCos, Tan -> fTan, tan -> fTan,
@@ -167,8 +167,8 @@ Options[StandardizeExpression] = {SuppressIndependentVariable -> True};
 
 StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
 	suppress = OptionValue[SuppressIndependentVariable];
-         output=expr/.activeFunctionRules;
-	output = output/.s:_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+    output = expr/.activeFunctionRules;
+	output = output/.(s:_Symbol)[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
 	output = output/.I[arg_]:>I*arg;
 	output = output/.{
 		dx_^a_. dy_^b_.:>

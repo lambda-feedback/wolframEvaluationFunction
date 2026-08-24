@@ -39,29 +39,14 @@ PreviewFunction[response_, params_] := Module[{
     ]
   ];
 
-    latexString = ToString[parsedResponse/.activeFunctionRulesPublic, TeXForm];
-    wolframString = ToString[parsedResponse/.activeFunctionRulesPublic, InputForm];
+    latexString = ToString[parsedResponse/.activeFunctionRules, TeXForm];
+    wolframString = ToString[parsedResponse/.activeFunctionRules, InputForm];
 
   <|
         "latex" -> latexString,
         "sympy" -> wolframString
     |>
 ];
-
-activeFunctionRulesPublic = {
-	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
-	arcsin -> ArcSin, asin -> ArcSin, arccos -> ArcCos, acos -> ArcCos, arctan -> ArcTan, atan -> ArcTan, 
-	arcsec -> ArcSec, asec -> ArcSec, ArcCosec -> ArcCsc, arccsc -> ArcCsc, acsc -> ArcCsc, acosec -> ArcCsc,
-	arccot -> ArcCot,acot -> ArcCot, 
-	sinh -> Sinh, cosh -> Cosh, tanh -> Tanh, sech -> Sech, Cosech -> Csch, csch -> Csch, cosech -> Csch, coth -> Coth, 
-	arcsinh -> ArcSinh, asinh -> ArcSinh, arccosh -> ArcCosh, acosh -> ArcCosh, arctanh -> ArcTanh, atanh -> ArcTanh, 
-	arcsech -> ArcSech, asech -> ArcSech, 
-	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
-	arccoth -> ArcCoth, acoth -> ArcCoth,
-	exp -> Exp, log -> Log, ln -> Log, sqrt -> Sqrt,
-	pi -> Pi, e -> E, i -> I};
-
-Begin["`Private`"];
 
 activeFunctionRules = {
 	sin -> Sin, cos -> Cos, tan -> Tan, sec -> Sec, Cosec -> Csc, csc -> Csc, cosec -> Csc, cot -> Cot, 
@@ -76,6 +61,8 @@ activeFunctionRules = {
 	exp -> Exp, log -> Log, ln -> Log, 
 	sqrt ->Sqrt,
 	pi -> Pi, e -> E, i -> I};
+
+Begin["`Private`"];
 
 SafeToExpression[str_String, isLatex_,suppress_,plusMinusSplit_] :=
   Module[{expr, result},
@@ -147,8 +134,8 @@ Options[StandardizeExpression] = {SuppressIndependentVariable -> True};
 
 StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
 	suppress = OptionValue[SuppressIndependentVariable];
-         output=expr/.activeFunctionRules;
-	output = output/.s:_Symbol[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
+    output = expr/.activeFunctionRules;
+	output = output/.(s:_Symbol)[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
 	output = output/.I[arg_]:>I*arg;
 	output = output/.{
 		dx_^a_. dy_^b_.:>
