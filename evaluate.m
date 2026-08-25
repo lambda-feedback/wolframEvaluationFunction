@@ -96,7 +96,7 @@ into Optional[..] patterns *)
 Options[PatternizeSymbol] = {Atomic -> False};
 
 PatternizeSymbol[a_Symbol, namedVariables_, OptionsPattern[]] /; 
-  Not[MemberQ[namedVariables, a]] := \!\(\*
+  Not[MemberQ[namedVariables, a]]&&(StringTake[ToString[a],Min[4,StringLength[ToString[a]]]]!="$sym") := \!\(\*
 TagBox[
 StyleBox[
 RowBox[{"\n", "  ", 
@@ -195,26 +195,36 @@ FullStandardizeString[str_,OptionsPattern[]] := Module[{output,suppress},
 has the same structure as a given answer template, given a set of \
 named variables.*)
 
-ComplexSymbolize[a_Integer?Positive]:=Symbol["$sym"<>ToString[a]]
+SymbolizeNumber[a_Integer?Positive]:=Symbol["$sym"<>ToString[a]]
 
-ComplexSymbolize[a_Integer?Negative]:=Symbol["$symmin"<>ToString[-a]]
+SymbolizeNumber[a_Integer?Negative]:=(-Symbol["$sym"<>ToString[-a]])
 
-ComplexSymbolize[a_Rational] :=Symbol["$num"<>ToString[Numerator[a]]<>"den"<>ToString[Denominator[a]]]
+SymbolizeNumber[a_Rational] :=Symbol["$num"<>ToString[Numerator[a]]<>"den"<>ToString[Denominator[a]]]
 
-ComplexSymbolize[0]:=0
+SymbolizeNumber[0]:=0
 
-CanonicComplex[Complex[a_,b_]]:=ComplexSymbolize[a]+ComplexSymbolize[b] I
+SymbolizeNumber[arg_]:=arg
+
+SymbolizeNumber[Complex[a_,b_]]:=SymbolizeNumber[a]+SymbolizeNumber[b] I
+
+SymbolizeNumber[Complex[0,1]]:=I
+
+(* CanonicComplex function is currently no longer used
+
+CanonicComplex[Complex[a_,b_]]:=SymbolizeNumber[a]+SymbolizeNumber[b] I
+
+CanonicComplex[a_.+I*b_]:=SymbolizeNumber[a]+SymbolizeNumber[b] I
 
 CanonicComplex[I]:=I
 
-CanonicComplex[arg_]:=arg
+CanonicComplex[arg_]:=arg *)
    
 Options[StructureMatchQ] = {Atomic -> False};
 
 StructureMatchQ[answerTemplate_String,response_String,namedVariables_List,multipleAnswersInterpretation_String] := 
 	Module[{response2,answerTemplate2},
-	    response2=MapAll[CanonicComplex,ReplaceAll[ToExpression[response],inertFunctionRules]];
-		answerTemplate2=ReplaceAll[ToExpression[answerTemplate],inertFunctionRules];
+	    response2=MapAll[SymbolizeNumber,ReplaceAll[ToExpression[response],inertFunctionRules]];
+		answerTemplate2=MapAll[SymbolizeNumber,ReplaceAll[ToExpression[answerTemplate],inertFunctionRules]];
 		StructureMatchQ[answerTemplate2,response2,namedVariables,multipleAnswersInterpretation]]
 
 StructureMatchQ[answerTemplate_,response_,namedVariables_List,multipleAnswersInterpretation_String] := 
@@ -284,7 +294,8 @@ SemanticMatchQ[answer_String,response_String,multipleAnswersInterpretation_Strin
   ]
 
 SemanticAndStructureMatchQ[answer_String,response_String,answerTemplate_String,namedVariables_List,multipleAnswersInterpretation_String] :=
-	TrueQ[SemanticMatchQ[answer,response,multipleAnswersInterpretation]&&StructureMatchQ[answerTemplate,response,namedVariables,multipleAnswersInterpretation]]
+	TrueQ[SemanticMatchQ[answer,response,multipleAnswersInterpretation]&&
+	      StructureMatchQ[answerTemplate,response,namedVariables,multipleAnswersInterpretation]]
 
 equalQSemantic[answer_String, response_String, params_Association] := Module[{correctQ, standardizedAnswer,standardizedResponse,suppress,multipleAnswersInterpretation},
   Print["Evaluating Semantic"];    
@@ -302,7 +313,7 @@ equalQSemantic[answer_String, response_String, params_Association] := Module[{co
 
 equalQSemanticAndStructure[answer_String, response_String, params_Association] := Module[{
    namedVariables,standardizedAnswer,standardizedResponse,answerTemplate,standardizedAnswerTemplate,correctQ,suppress,multipleAnswersInterpretation},
-  Print["Evaluating SemanticAndStructure"];
+    Print["Evaluating SemanticAndStructure"];
     namedVariables = ToExpression[Lookup[params,"named_variables",{}],TraditionalForm];    
     answerTemplate = Lookup[params,"answer_template",Automatic]; 
     suppress = Lookup[params,"suppress_independent_variable",True];
