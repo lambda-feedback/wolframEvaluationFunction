@@ -37,24 +37,7 @@ EvaluationFunction[answer_, response_, params_] := Module[{result, feedback, typ
 
 Begin["`Private`"];
 
-inertFunctionRules = {
-   Sin -> fSin, sin -> fSin, Cos -> fCos,cos->fCos, Tan -> fTan, tan -> fTan,
-   Sec -> fSec, sec -> fSec, Csc -> fCsc, Cosec -> fCsc, csc -> fCsc, cosec -> fCsc, Cot -> fCot, cot -> fCot, 
-   ArcSin -> fArcSin, arcsin -> fArcSin, asin -> fArcSin, ArcCos -> fArcCos, arccos -> fArcCos, acos -> fArcCos, 
-   ArcTan -> fArcTan, arctan -> fArcTan, atan -> fArcTan, 
-   ArcSec -> fArcSec, arcsec -> fArcSec, asec -> fArcSec, 
-   ArcCsc -> fArcCsc, ArcCosec -> fArcCsc, arccsc -> fArcCsc, acsc -> fArcCsc, acosec -> fArcCsc, 
-   ArcCot -> fArcCot, arccot -> fArcCot, acot -> fArcCot, 
-   Sinh -> fSinh, sinh -> fSinh, Cosh -> fCosh, cosh -> fCosh, tanh -> fTanh, tanh->fTanh, 
-   Sech -> fSech, sech -> fSech, Csch -> fCsch, Cosech -> fCsch, csch -> fCsch, cosech -> fCsch, Coth -> fCoth, coth->fCoth,
-   ArcSinh -> fArcSinh, arcsinh -> fArcSinh, asinh -> fArcSinh, ArcCosh -> fArcCosh, arccosh -> fArcCosh, acosh -> fArcCosh, 
-   ArcTanh -> fArcTanh, arctanh -> fArcTanh, atanh -> fArcTanh, 
-   ArcSech -> fArcSech, arcsech -> fArcSech, asech -> fArcSech, 
-   ArcCsch -> fArcCsch, ArcCosech -> fArcCsch, arccsch -> fArcCsch, acsch -> fArcCsch, acosech -> fArcCsch, 
-   ArcCoth -> fArcCoth, arccoth -> fArcCoth, acoth->fArcCoth, 
-   Exp -> fExp, exp -> fExp, Log -> fLog, log -> fLog, ln -> fLog, 
-   Sqrt -> fSqrt, sqrt -> fSqrt,
-   pi -> Pi, e -> E, i -> I};
+(* inertFunctionRules lives in utils.m, shared with preview` *)
 
 equalQNumeric[answer_, response_, params_] := Module[{tolerance, error},
   Print["Evaluating Equal Numeric"];
