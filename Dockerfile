@@ -17,5 +17,6 @@ ENV LOG_LEVEL="DEBUG"
 # keeps using the toolkit-wolfram version pinned in the base image.
 #COPY ./.local-toolkit /opt/lambda-feedback/toolkit-wolfram
 
+COPY ./utils.m /app/utils.m
 COPY ./evaluate.m /app/evaluate.m
 COPY ./preview.m /app/preview.m
