@@ -140,12 +140,9 @@ Depatternize[pattern_] := MapAll[DepatternizePattern, pattern]
 Options[FullStandardizeString] = {SuppressIndependentVariable -> True};
 
 FullStandardizeString[str_,OptionsPattern[]] := Module[{output,suppress},
-	Print["Evaluating FullStandardizeString: ", str];
 	output=StandardizeString[str,PlusMinusSplit->True];
 	output = ToExpression[output,TraditionalForm];
-	Print["FullStandardizeString parsed variable contexts: ", (#->Context[#])&/@Union[Cases[output,_Symbol,{0,Infinity}]]];
 	output=StandardizeExpression[output,SuppressIndependentVariable->OptionValue[SuppressIndependentVariable]];
-	Print["FullStandardizeString final variable contexts: ", (#->Context[#])&/@Union[Cases[output,_Symbol,{0,Infinity}]]];
 	ToString[output,InputForm]]
 
 (*StructureMatchQ: a function that checks whether a user's response \

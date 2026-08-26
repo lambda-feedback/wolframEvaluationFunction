@@ -51,12 +51,10 @@ would parse as an assignment gets parsed instead as an equation, and also carrie
 other standard string replacements*)
 
 StandardizeString[str_String,OptionsPattern[]]:=Module[{output},
-Print["Evaluating StandardizeString: ", str];
 output=StringReplace[
     FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
     {"**"->"^","plus_minus"->"\[PlusMinus]","minus_plus"->"\[MinusPlus]"}];
 If[OptionValue[PlusMinusSplit]&&StringContainsQ[output,{"\[PlusMinus]","\[MinusPlus]"}],output="{"<>StringReplace[output,{"\[PlusMinus]"->"+","\[MinusPlus]"->"-"}]<>", "<>StringReplace[output,{"\[PlusMinus]"->"-","\[MinusPlus]"->"+"}]<>"}"];
-Print["StandardizeString output: ", output];
 output]
 
 (*StandardizeExpression: a function that performs a number of standard replacements
@@ -66,8 +64,6 @@ at the Expression stage, namely:
 - if the option SuppressIndependentVariable is set to True, replacing each y'[x] with y'*)
 
 StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
-	Print["Evaluating StandardizeExpression: ", expr];
-	Print["StandardizeExpression input variable contexts: ", (#->Context[#])&/@Union[Cases[expr,_Symbol,{0,Infinity}]]];
 	suppress = OptionValue[SuppressIndependentVariable];
     output = expr/.activeFunctionRules;
 	output = output/.(s:_Symbol)[arg_Plus]/;Not[MemberQ[Attributes[s], NumericFunction]] :> s*arg;
@@ -80,7 +76,6 @@ StandardizeExpression[expr_, OptionsPattern[]]:=Module[{output,suppress},
 			(ToExpression[StringTake[ToString[dy],{2}]]'[StringTake[ToString[dx],{2}]])^a/;
 				StringTake[ToString[dx],{1}]=="d"&&StringTake[ToString[dy],{1}]=="d"&&b>0&&a+b==0};
 	If[suppress,output=output/.Derivative[n_][y_][x_]:>Derivative[n][y]];
-	Print["StandardizeExpression output variable contexts: ", (#->Context[#])&/@Union[Cases[output,_Symbol,{0,Infinity}]]];
 	output
 ]
 
