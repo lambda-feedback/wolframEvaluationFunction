@@ -37,6 +37,7 @@ activeFunctionRules = {
 	ArcCsch -> ArcCsch, ArcCosech -> ArcCsch, arccsch->ArcCsch, acsch -> ArcCsch, acosech -> ArcCsch,
 	arccoth -> ArcCoth, acoth -> ArcCoth,
 	exp -> Exp, log -> Log, ln -> Log, sqrt -> Sqrt,
+	int -> Integrate, Int -> Integrate, integrate -> Integrate,
 	pi -> Pi, e -> E, i -> I};
 
 inertFunctionRules = {
@@ -56,6 +57,7 @@ inertFunctionRules = {
    ArcCoth -> fArcCoth, arccoth -> fArcCoth, acoth->fArcCoth,
    Exp -> fExp, exp -> fExp, Log -> fLog, log -> fLog, ln -> fLog,
    Sqrt -> fSqrt, sqrt -> fSqrt,
+   Integrate -> fIntegrate, int -> fIntegrate, Int -> fIntegrate, integrate -> fIntegrate,
    pi -> Pi, e -> E, i -> I};
 
 Options[StandardizeString] = {PlusMinusSplit->True};
@@ -69,12 +71,38 @@ of the equals sign in a string to the repeated equals sign, so that anything WL
 would parse as an assignment gets parsed instead as an equation, and also carries out
 other standard string replacements*)
 
+bracketCount[str_String]:=
+    StringCount[str,"("]+StringCount[str,"{"]+StringCount[str,"["]-
+    StringCount[str,")"]-StringCount[str,"}"]-StringCount[str,"]"]
+
+mainCommaPosition[functionString_String]:=Module[
+    {commaPositions=StringPosition[functionString,","][[All,1]]},
+    Select[commaPositions,bracketCount[StringTake[functionString,#-1]]==1&]][[1]]
+
+mainCommaSplit[functionString_String]:=Module[
+    {mcp=mainCommaPosition[functionString],str1,str2},
+    {StringTake[functionString,mcp-1],StringDrop[functionString,mcp]}]
+
+bracketRectify[functionString_String]:=Module[
+    {split=mainCommaSplit[functionString],str1,str2,str2OpenParen,str2CloseParen},
+    {str1,str2}=split;
+    If[StringContainsQ[str2,"("],
+        str2OpenParen=StringPosition[str2,"("][[All,1]][[1]];
+        str2CloseParen=StringPosition[str2,")"][[All,1]][[-2]];
+        str2=StringReplacePart[str2,"{",{str2OpenParen,str2OpenParen}];
+        str2=StringReplacePart[str2,"}",{str2CloseParen,str2CloseParen}]];
+    str1<>","<>str2]
+
 StandardizeString[str_String,OptionsPattern[]]:=Module[{output},
-output=StringReplace[
-    FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
-    {"**"->"^","plus_minus"->"\[PlusMinus]","minus_plus"->"\[MinusPlus]"}];
-If[OptionValue[PlusMinusSplit]&&StringContainsQ[output,{"\[PlusMinus]","\[MinusPlus]"}],output="{"<>StringReplace[output,{"\[PlusMinus]"->"+","\[MinusPlus]"->"-"}]<>", "<>StringReplace[output,{"\[PlusMinus]"->"-","\[MinusPlus]"->"+"}]<>"}"];
-output]
+    output=StringReplace[
+        FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
+        {"**"->"^","plus_minus"->"\[PlusMinus]","minus_plus"->"\[MinusPlus]"}];
+    If[StringContainsQ[output,{
+           "Integrate[","integrate[","Int[","int[",
+           "Integrate(","integrate(","Int(","int("}],
+       output=bracketRectify[output]];
+    If[OptionValue[PlusMinusSplit]&&StringContainsQ[output,{"\[PlusMinus]","\[MinusPlus]"}],output="{"<>StringReplace[output,{"\[PlusMinus]"->"+","\[MinusPlus]"->"-"}]<>", "<>StringReplace[output,{"\[PlusMinus]"->"-","\[MinusPlus]"->"+"}]<>"}"];
+    output]
 
 (*StandardizeExpression: a function that performs a number of standard replacements
 at the Expression stage, namely:
