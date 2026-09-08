@@ -71,27 +71,60 @@ of the equals sign in a string to the repeated equals sign, so that anything WL
 would parse as an assignment gets parsed instead as an equation, and also carries out
 other standard string replacements*)
 
-bracketCount[str_String]:=
-    StringCount[str,"("]+StringCount[str,"{"]+StringCount[str,"["]-
-    StringCount[str,")"]-StringCount[str,"}"]-StringCount[str,"]"]
+BracketCount[str_String]:=
+	StringCount[str,"("]+StringCount[str,"{"]+StringCount[str,"["]-
+	StringCount[str,")"]-StringCount[str,"}"]-StringCount[str,"]"]
 
-mainCommaPosition[functionString_String]:=Module[
-    {commaPositions=StringPosition[functionString,","][[All,1]]},
-    Select[commaPositions,bracketCount[StringTake[functionString,#-1]]==1&]][[1]]
+MainCommaPosition[functionString_String]:=Module[
+	{commaPositions=StringPosition[functionString,","][[All,1]]},
+	Select[commaPositions,BracketCount[StringTake[functionString,#-1]]==1&]][[1]]
 
-mainCommaSplit[functionString_String]:=Module[
-    {mcp=mainCommaPosition[functionString],str1,str2},
-    {StringTake[functionString,mcp-1],StringDrop[functionString,mcp]}]
+MainCommaSplit[functionString_String]:=Module[
+	{mcp=MainCommaPosition[functionString],str1,str2},
+	{StringTake[functionString,mcp-1],StringDrop[functionString,mcp]}]
 
-bracketRectify[functionString_String]:=Module[
-    {split=mainCommaSplit[functionString],str1,str2,str2OpenParen,str2CloseParen},
-    {str1,str2}=split;
-    If[StringContainsQ[str2,"("],
-        str2OpenParen=StringPosition[str2,"("][[All,1]][[1]];
-        str2CloseParen=StringPosition[str2,")"][[All,1]][[-2]];
-        str2=StringReplacePart[str2,"{",{str2OpenParen,str2OpenParen}];
-        str2=StringReplacePart[str2,"}",{str2CloseParen,str2CloseParen}]];
-    str1<>","<>str2]
+BracketRectify[functionString_String]:=Module[
+	{split=MainCommaSplit[functionString],str1,str2,str2OpenParen,str2CloseParen},
+	{str1,str2}=split;
+	If[
+		StringContainsQ[str2,"("],
+		str2OpenParen=StringPosition[str2,"("][[All,1]][[1]];
+		str2CloseParen=StringPosition[str2,")"][[All,1]][[-2]];
+		str2=StringReplacePart[str2,"{",{str2OpenParen,str2OpenParen}];
+		str2=StringReplacePart[str2,"}",{str2CloseParen,str2CloseParen}]];
+		str1<>","<>str2]
+
+BracketRectify[functionString_String]/;Not[StringContainsQ[
+		functionString,
+		{"Integrate(","Int(","integrate(","int(","Integrate[","Int[","integrate[","int["}]]:=functionString
+
+IntegrateOpenBracketPositions[str_String]:=StringPosition[
+	str,{"Integrate(","Int(","integrate(","int(","Integrate[","Int[","integrate[","int["}]
+
+IntegrateCloseBracketPosition[str_,pos_]:=Module[
+	{bracketCount=1,newPos=pos+1,openBracketType,closeBracketType},
+	openBracketType=StringTake[str,{pos}];
+	closeBracketType=If[openBracketType=="[","]",")"];
+	While[
+		bracketCount>0&&newPos<=StringLength[str],
+		newPos=newPos+1;
+		Switch[
+			StringTake[str,{newPos}],
+			openBracketType,bracketCount=bracketCount+1,
+			closeBracketType,bracketCount=bracketCount-1]];
+	newPos]
+
+IntegrateCloseBracketPositions[str_String,pos_List]:=Map[IntegrateCloseBracketPosition[str,#]&,pos]
+
+IntegralComponents[str_]:=Module[
+	{iopb,icpb,cutPositions},
+	iopb=IntegrateOpenBracketPositions[str];
+	icpb=IntegrateCloseBracketPositions[str,iopb[[All,2]]];
+	cutPositions=Riffle[iopb[[All,1]],icpb+1];
+	cutPositions=Join[If[cutPositions[[1]]==1,{},{1}],cutPositions,{StringLength[str]+1}];
+	Table[StringTake[str,{cutPositions[[i]],cutPositions[[i+1]]-1}],{i,1,Length[cutPositions]-1}]]
+	
+RectifyAllBrackets[str_String]:=StringJoin[Map[BracketRectify,IntegralComponents[str]]]
 
 StandardizeString[str_String,OptionsPattern[]]:=Module[{output},
     output=StringReplace[
@@ -100,7 +133,7 @@ StandardizeString[str_String,OptionsPattern[]]:=Module[{output},
     If[StringContainsQ[output,{
            "Integrate[","integrate[","Int[","int[",
            "Integrate(","integrate(","Int(","int("}],
-       output=bracketRectify[output]];
+       output=RectifyAllBrackets[output]];
     If[OptionValue[PlusMinusSplit]&&StringContainsQ[output,{"\[PlusMinus]","\[MinusPlus]"}],output="{"<>StringReplace[output,{"\[PlusMinus]"->"+","\[MinusPlus]"->"-"}]<>", "<>StringReplace[output,{"\[PlusMinus]"->"-","\[MinusPlus]"->"+"}]<>"}"];
     output]
 
