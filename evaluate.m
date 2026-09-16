@@ -198,8 +198,9 @@ equalQStructure[answer_String, response_String, params_Association] := Module[{n
 	(a) is the same mathematical object as a given answer,and (b) has the same structure as a given answer template,
 	given a set of named variables. *)
 	
-SemanticMatchQ[answer_,response_,multipleAnswersInterpretation_String] := TrueQ[Simplify[(response-answer)/.activeFunctionRules] == 0] || 
-    TrueQ[FullSimplify[(response-answer)/.activeFunctionRules] == 0]
+SemanticMatchQ[answer_,response_,multipleAnswersInterpretation_String] := 
+    TrueQ[Simplify[((response-answer)/.activeFunctionRules)/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]] == 0] || 
+    TrueQ[FullSimplify[((response-answer)/.activeFunctionRules)/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]] == 0]
 
 SemanticMatchQ[answer_List,response_List,"match_all"]:=Apply[And,Apply[Or,Apply[SemanticMatchQ[#1,#2,"match_all"]&,Outer[List,answer,response],{2}],{1}]];
 
