@@ -217,8 +217,8 @@ SemanticMatchQ[answer_List,response_,"match_order"]:=False;
 SemanticMatchQ[answer_Equal, response_Equal,multipleAnswersInterpretation_String] := 
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]],multipleAnswersInterpretation]||
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]],multipleAnswersInterpretation]||
-	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])]],1,multipleAnswersInterpretation]||
-	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])]],1,multipleAnswersInterpretation]
+	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]],1,multipleAnswersInterpretation]||
+	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]],1,multipleAnswersInterpretation]
 
 SemanticMatchQ[answer_Equal, response_,multipleAnswersInterpretation_String] := False
 
