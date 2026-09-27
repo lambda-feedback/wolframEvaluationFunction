@@ -279,6 +279,50 @@ SemanticMatchQ[answer:LessEqual[arg1_,args1__], response:GreaterEqual[arg2_,args
 
 SemanticMatchQ[answer:GreaterEqual[arg1_,args1__], response:LessEqual[arg2_,args2__], multipleAnswersInterpretation_String] :=
     Module[{argList2 = Join[Reverse[{args2}], {arg2}]}, SemanticMatchQ[answer, Apply[GreaterEqual, argList2], multipleAnswersInterpretation]]
+  
+SemanticMatchQ[answer:Less[arg1_,arg2_], response:Less[arg3_,arg4_], multipleAnswersInterpretation_String] := Module[
+    {ratio1, ratio2},
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]], multipleAnswersInterpretation]||
+	(ratio1 = Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]];
+	 ratio2 = Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]];
+	 (NumericQ[ratio1]&&(ratio1>0)))]
+
+SemanticMatchQ[answer:Less[arg1_,args1__], response:Less[arg2_,args2__],multipleAnswersInterpretation_String]/;(Length[{args1}]!=Length[{args2}]) := False
+
+Subrelations[inequality_Less] := Apply[Less,Partition[Apply[List,inequality],2,1],1]
+
+SemanticMatchQ[answer:Less[arg1_,args1__], response:Less[arg2_,args2__], multipleAnswersInterpretation_String] := Module[
+    {subrelations1 = Subrelations[answer],subrelations2 = Subrelations[response]},
+        Thread[SemanticMatchQ[#1,#2,multipleAnswersInterpretation]&[subrelations1,subrelations2]]]
+
+SemanticMatchQ[answer_Less, response:Except[_Less|_Greater],multipleAnswersInterpretation_String] := False
+
+SemanticMatchQ[answer:Except[_Less|_Greater], response_Less,multipleAnswersInterpretation_String] := False
+
+SemanticMatchQ[answer:Greater[arg1_,arg2_], response:Greater[arg3_,arg4_], multipleAnswersInterpretation_String] := Module[
+    {ratio1, ratio2},
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]], multipleAnswersInterpretation]||
+	(ratio1 = Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]];
+	 ratio2 = Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]];
+	 (NumericQ[ratio1]&&(ratio1>0)))]
+
+SemanticMatchQ[answer:Greater[arg1_,args1__], response:Greater[arg2_,args2__],multipleAnswersInterpretation_String]/;(Length[{args1}]!=Length[{args2}]) := False
+
+Subrelations[inequality_Greater] := Apply[Greater,Partition[Apply[List,inequality],2,1],1]
+
+SemanticMatchQ[answer:Greater[arg1_,args1__], response:Greater[arg2_,args2__], multipleAnswersInterpretation_String] := Module[
+    {subrelations1 = Subrelations[answer],subrelations2 = Subrelations[response]},
+        Thread[SemanticMatchQ[#1,#2,multipleAnswersInterpretation]&[subrelations1,subrelations2]]]
+
+SemanticMatchQ[answer_Greater, response:Except[_Less|_Greater],multipleAnswersInterpretation_String] := False
+
+SemanticMatchQ[answer:Except[_Less|_Greater], response_Greater,multipleAnswersInterpretation_String] := False
+
+SemanticMatchQ[answer:Less[arg1_,args1__], response:Greater[arg2_,args2__], multipleAnswersInterpretation_String] :=
+    Module[{argList2 = Join[Reverse[{args2}], {arg2}]}, SemanticMatchQ[answer, Apply[Less, argList2], multipleAnswersInterpretation]]
+
+SemanticMatchQ[answer:Greater[arg1_,args1__], response:Less[arg2_,args2__], multipleAnswersInterpretation_String] :=
+    Module[{argList2 = Join[Reverse[{args2}], {arg2}]}, SemanticMatchQ[answer, Apply[Greater, argList2], multipleAnswersInterpretation]]
 
 SemanticMatchQ[answer_String,response_String,multipleAnswersInterpretation_String] := 
   SemanticMatchQ[
