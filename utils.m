@@ -129,7 +129,7 @@ RectifyAllBrackets[str_String]:=StringJoin[Map[BracketRectify,IntegralComponents
 StandardizeString[str_String,OptionsPattern[]]:=Module[{output},
     output=StringReplace[
         FixedPoint[StringReplace["==="->"=="],StringReplace[str,"="->"=="]],
-        {"**"->"^","plus_minus"->"\[PlusMinus]","minus_plus"->"\[MinusPlus]"}];
+        {"**"->"^","plus_minus"->"\[PlusMinus]","minus_plus"->"\[MinusPlus]","<=="->"<=",">=="->">="}];
     If[StringContainsQ[output,{
            "Integrate[","integrate[","Int[","int[",
            "Integrate(","integrate(","Int(","int("}],
