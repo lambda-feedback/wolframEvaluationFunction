@@ -214,11 +214,15 @@ SemanticMatchQ[answer_List,response_List,"match_order"]:=Apply[And,Apply[Semanti
 
 SemanticMatchQ[answer_List,response_,"match_order"]:=False;
 
-SemanticMatchQ[answer:Equal[arg1_,arg2_], response:Equal[arg3_,arg4_], multipleAnswersInterpretation_String] := 
+SemanticMatchQ[answer:Equal[arg1_,arg2_], response:Equal[arg3_,arg4_], multipleAnswersInterpretation_String] := Module[
+    {ratio1, ratio2},
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]], multipleAnswersInterpretation]||
 	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]], multipleAnswersInterpretation]||
-	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]], 1, multipleAnswersInterpretation]||
-	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]], 1, multipleAnswersInterpretation]
+	(ratio1 = Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]];
+	 ratio2 = Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]];
+	 SemanticMatchQ[Denominator[ratio1], 1, multipleAnswersInterpretation]||
+	 SemanticMatchQ[Denominator[ratio2], 1, multipleAnswersInterpretation]||
+	 NumericQ[ratio1]||AtomQ[ratio1]||AtomQ[ratio2])]
 
 SemanticMatchQ[answer:Equal[arg1_,args1__], response:Equal[arg2_,args2__],multipleAnswersInterpretation_String]/;(Length[{args1}]!=Length[{args2}]) := False
 
