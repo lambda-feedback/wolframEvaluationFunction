@@ -214,15 +214,23 @@ SemanticMatchQ[answer_List,response_List,"match_order"]:=Apply[And,Apply[Semanti
 
 SemanticMatchQ[answer_List,response_,"match_order"]:=False;
 
-SemanticMatchQ[answer_Equal, response_Equal,multipleAnswersInterpretation_String] := 
-	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]],multipleAnswersInterpretation]||
-	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]],multipleAnswersInterpretation]||
-	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]],1,multipleAnswersInterpretation]||
-	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]],1,multipleAnswersInterpretation]
+SemanticMatchQ[answer:Equal[arg1_,arg2_], response:Equal[arg3_,arg4_], multipleAnswersInterpretation_String] := 
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[1]]-response[[2]], multipleAnswersInterpretation]||
+	SemanticMatchQ[answer[[1]]-answer[[2]], response[[2]]-response[[1]], multipleAnswersInterpretation]||
+	SemanticMatchQ[Denominator[Cancel[(answer[[1]]-answer[[2]])/(response[[1]]-response[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]], 1, multipleAnswersInterpretation]||
+	SemanticMatchQ[Denominator[Cancel[(response[[1]]-response[[2]])/(answer[[1]]-answer[[2]])/.Integrate[integrand_,{var_,min_,max_}]:>Integrate[integrand/.var->$dummy,{$dummy,min,max}]]], 1, multipleAnswersInterpretation]
 
-SemanticMatchQ[answer_Equal, response_,multipleAnswersInterpretation_String] := False
+SemanticMatchQ[answer:Equal[arg1_,args1__], response:Equal[arg2_,args2__],multipleAnswersInterpretation_String]/;(Length[{args1}]!=Length[{args2}]) := False
 
-SemanticMatchQ[answer_, response_Equal,multipleAnswersInterpretation_String] := False
+Subequalities[equality_Equal] := Apply[Equal,Partition[Apply[List,equality],2,1],1]
+
+SemanticMatchQ[answer:Equal[arg1_,args1__], response:Equal[arg2_,args2__], multipleAnswersInterpretation_String] := Module[
+    {subequalities1 = Subequalities[answer],subequalities2 = Subequalities[response]},
+        Thread[SemanticMatchQ[#1,#2,multipleAnswersInterpretation]&[subequalities1,subequalities2]]]
+
+SemanticMatchQ[answer_Equal, response:Except[_Equal],multipleAnswersInterpretation_String] := False
+
+SemanticMatchQ[answer:Except[_Equal], response_Equal,multipleAnswersInterpretation_String] := False
 
 SemanticMatchQ[answer_String,response_String,multipleAnswersInterpretation_String] := 
   SemanticMatchQ[
