@@ -282,6 +282,12 @@ SemanticMatchQ[answer:Less[arg1_,args1__], response:Greater[arg2_,args2__], mult
 
 SemanticMatchQ[answer:Greater[arg1_,args1__], response:Less[arg2_,args2__], multipleAnswersInterpretation_String] :=
     Module[{argList2 = Join[Reverse[{args2}], {arg2}]}, SemanticMatchQ[answer, Apply[Greater, argList2], multipleAnswersInterpretation]]
+    
+ResolveInequalities[relationExpression_Inequality]:= Apply[#2[#1,#3]&,Partition[Apply[List,relationExpression],3,2],{1}]
+
+SemanticMatchQ[answer_Inequality, response_Inequality, multipleAnswersInterpretation_String] := 
+    Module[{subrelations1 = ResolveInequalities[answer], subrelations2 = ResolveInequalities[response]},
+        Thread[SemanticMatchQ[#1,#2,"match_any"]&[subrelations1,subrelations2]]]
 
 SemanticMatchQ[answer_String,response_String,multipleAnswersInterpretation_String] := 
   SemanticMatchQ[
