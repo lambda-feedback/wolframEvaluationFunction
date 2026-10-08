@@ -19,6 +19,15 @@
 Get["utils.m"];
 BeginPackage["evaluate`", {"utils`"}];
 
+EvaluationFunction::usage = 
+    "EvaluationFunction[\!\(\*
+StyleBox[\"answer\",\nFontSlant->\"Italic\"]\), \!\(\*
+StyleBox[\"response\",\nFontSlant->\"Italic\"]\), \!\(\*
+StyleBox[\"params\",\nFontSlant->\"Italic\"]\)] compares the string \!\(\*
+StyleBox[\"response\",\nFontSlant->\"Italic\"]\), a student's response to a task, with the string \!\(\*
+StyleBox[\"answer\",\nFontSlant->\"Italic\"]\), the correct or expected outcome of the task; details of the comparison method are set by \!\(\*
+StyleBox[\"params\",\nFontSlant->\"Italic\"]\). The return value is an Association with keys \"is_correct\", \"feedback\" and \"error\"."
+
 EvaluationFunction[answer_, response_, params_] := Module[{result, feedback, type},
   type = params["type"];
   Print["Running Evaluation Function"];
