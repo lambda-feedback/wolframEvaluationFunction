@@ -119,7 +119,7 @@ This parameter is used only when the answer, or the student's response, contains
 #### `tolerance`
 
 This is a parameter used only in numerical comparison. By default, two numbers are compared by testing whether they are exactly equal. This works well for integers and rationals, but poorly for reals. For that reason, numerical quantities are compared using a `tolerance`, which is by default zero but which can be overridden by setting the `tolerance` parameter.
-/
+
 #### `tolerance_is_absolute`
 
 By default, tolerance is *relative*: a response matches the answer "5",with tolerance 0.01, if it lies between $0.99 \times 5$ and $1.01 \times 5$.
