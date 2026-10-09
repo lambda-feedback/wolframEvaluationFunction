@@ -23,7 +23,7 @@ PreviewFunction::usage = "PreviewFunction[\!\(\*
 StyleBox[\"response\",\nFontSlant->\"Italic\"]\), \!\(\*
 StyleBox[\"params\",\nFontSlant->\"Italic\"]\)] parses the string \!\(\*
 StyleBox[\"response\",\nFontSlant->\"Italic\"]\), representing a student's response to a task, as a LaTeX string and as a string representation of a Wolfram expression; the details of the parsing are set by \!\(\*
-StyleBox[\"params\",\nFontSlant->\"Italic\"]\). The return value is an Assocation with keys \"latex\" and \"sympy\", or (if parsing has failed) the single key \"error\"." 
+StyleBox[\"params\",\nFontSlant->\"Italic\"]\). The return value is an Association with keys \"latex\" and \"sympy\", or (if parsing has failed) the single key \"error\"." 
 
 PreviewFunction[response_, params_] := Module[{
 	latexString, wolframString, parsedResponse, isLatex,suppress,plusMinusSplit},
