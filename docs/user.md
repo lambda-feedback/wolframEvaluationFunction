@@ -89,7 +89,7 @@ In the case of that particular question, you want the student's response to cont
 
 Conceivably, however, you may want instead to set the question "Find either of the two solutions in $x$ of the equation $x^2 + 2 x - 3 = 0$." In this case, either 1 or -3 would be an acceptable response. To achieve this, you should again set the answer to be "{1, -3}" or "-1 plus_minus 2", but you should explicitly give the `multiple_answers_interpretation` parameter the value `match_any`. 
 
-(This feature is useful when you have a variable that may be positive or negative, such as in the question "Find, in terms of an integer variable $n$, all solutions of the equation $tan(x) = 1/\sqrt{3}$". The responses "pi/6 + n pi" and "pi/6 - n pi" are both correct, and if you set the answer to "pi/6 plus_minus n pi" and give `multiple_answers_interpretation` the value `match_any`, you will have exactly the behaviour you need.)
+(This feature is useful when you have a variable that may be positive or negative, such as in the question "Find, in terms of an integer variable $n$, all solutions of the equation $\tan(x) = 1/\sqrt{3}$". The responses "pi/6 + n pi" and "pi/6 - n pi" are both correct, and if you set the answer to "pi/6 plus_minus n pi" and give `multiple_answers_interpretation` the value `match_any`, you will have exactly the behaviour you need.)
 
 Finally, you may wish to set the question "Find, in ascending numerical order, the two solutions in $x$ of the equation $x^2 + 2 x - 3 = 0$." For this, you would deem acceptable the responses "{-3, 1}" or "-1 minus_plus 2", but not "{1, -3}" or "-1 plus_minus 2". To achieve this, set the answer to be "{-3, 1}" or "-1 minus_plus 2", and give `multiple_answers_interpretation` the value `match_order`.
 
