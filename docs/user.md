@@ -110,7 +110,7 @@ To prevent this, and insist on an explicit "x" in the student's response, you wi
 
 #### `plus_minus_split_preview`
 
-This parameter is only used when the student's response contains a "plus_minus" or a "minus_plus"; otherwise, it is ignored. By default it has the value `True`, meaning that if a student types "-1 plus_minus 2" this will appear in the preview window as $\{1, -3\}$. If you give it the value `False` then "-1 plus_minus 2" appears in the preview window as $-1 \pm 2$.
+This parameter is only used when the student's response contains a "plus_minus" or a "minus_plus"; otherwise, it is ignored. By default it has the value `True`, meaning that if a student types "-1 plus_minus 2" this will appear in the preview window as $\\{1, -3\\}$. If you give it the value `False` then "-1 plus_minus 2" appears in the preview window as $-1 \pm 2$.
 
 #### `suppress_independent_variable`
 
