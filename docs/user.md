@@ -66,7 +66,9 @@ If `type` is set to `"numerical"` (or, in fact, any string `wolframEvaluate` doe
 
 ### The conditional `answer_template` parameter
 
-If the `type` parameter is set up for mixed comparison (that is, if it has the value `"semantic_and_structure"` or the currently undocumented `"semantic_and_strict_structure"`), then you will need to set the  `answer_template` parameter. The value of `answer_template` should be a string representing your desired template, such as `"a * b"`; your answer itself should go in the answer field as with semantic comparison.
+If the `type` parameter is set up for mixed comparison (that is, if it has the value `"semantic_and_structure"` or the currently undocumented `"semantic_and_strict_structure"`), then you will probably need to set the  `answer_template` parameter. The value of `answer_template` should be a string representing your desired template, such as `"a * b"`; your answer itself should go in the answer field as with semantic comparison.
+
+If you leave this parameter unset, it will take the default value `Automatic`, which means the answer template will be identical to the answer.
 
 You may also wish, when performing mixed comparison, to set the optional `named_variables` parameter; see below.
 
@@ -129,7 +131,7 @@ If, instead, you want the tolerance to be *absolute*, so that the interval of ac
 | **Parameter** | **Format** | **Default**| **Description** |
 | :------------ | :----------| :------------|:-------------- |
 | `type`        | string | | Mandatory parameter governing how the student's *response* is compared to the teacher-author's *answer*. <br><br>**Possible values**<br> `"semantic"`: Test whether the response and the answer represent the same mathematical object. <br> `"structure"`: Test whether the response is of the form specified by the answer, read as a *template*. <br> `"semantic_and_structure"`: Apply both tests (needs `answer_template` parameter). <br> `"numerical"`: Test whether the answer and response are the same, or close, numerically.|
-| `answer_template` | string | | Must be set if `type` is `"semantic_and_structure"`; defines the template for the structural part of the comparison. |
+| `answer_template` | string | `Automatic` | Should usually be set if `type` is `"semantic_and_structure"`; defines the template for the structural part of the comparison.<br><br> If unset, it defaults to `Automatic`, making the answer template the same string as the answer. |
 | `correct_response_feedback` | string | `"Correct!"` | Feedback string for a correct response. |
 | `incorrect_response_feedback` | string | `"Incorrect!"` | Feedback string for an incorrect response. |
 | `multiple_answers_interpretation` | string | `"match_all"` | Governs how an answer containing more than one value is interpreted.<br><br>**Possible values**<br>  `"match_all"`: To match, the response must contain all the answer values, in any order. <br> `"match_any"`: The response need only contain any one of the answer values. <br> `"match_order"`: The response must contain all the answer values, in the same order.|
